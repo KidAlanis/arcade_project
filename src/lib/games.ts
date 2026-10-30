@@ -1,10 +1,10 @@
 export const games = [
   {
     slug: "game-1",
-    name: "<game 1>",
+    name: "星露爱洗澡 (Pixel Bath)",
     number: "01",
     color: "pink",
-    symbol: "✦",
+    symbol: "♨",
   },
   {
     slug: "game-2",

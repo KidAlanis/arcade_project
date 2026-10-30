@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { games } from "@/lib/games";
 
 export function generateStaticParams() {
-  return games.map(({ slug }) => ({ slug }));
+  return games.filter((game) => game.slug !== "game-1").map(({ slug }) => ({ slug }));
 }
 export default async function GamePage({
   params,
