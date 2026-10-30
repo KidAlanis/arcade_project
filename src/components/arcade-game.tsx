@@ -6,18 +6,45 @@ import { localDay } from "@/lib/dreamio";
 import { PixelIcon } from "./pixel-art";
 import { WindowBar } from "./world-ui";
 import { useTicketWallet } from "./ticket-wallet";
+import { ClawpopGame } from "./clawpop-game";
 
 type Game = (typeof games)[number];
 type OnFinish = (score: number, detail: string) => void;
-const instructions = {
+const instructions: Record<string, string> = {
   memory:
     "Flip cards and match the pictures. Find all 6 pairs to finish. Fewer guesses mean a higher score.",
   stars:
     "Catch as many stars as you can in 15 seconds. Collect at least one to finish. You can also use Tab and Space.",
   reaction:
     "Wait for the pink area to turn green, then click as fast as you can. Too early? Try again. Space works too.",
+  clawpop:
+    "Insert a coin, use the directional buttons to position the claw, and press Catch to grab a cute plushie!",
 };
 export function ArcadeGame({ game }: { game: Game }) {
+  if (game.engine === "clawpop") {
+    return (
+      <main className="clawpop-page-container">
+        <div className="page-breadcrumb">
+          <Link href="/lobby">HOME / GAME LOBBY</Link>
+          <span>{game.english}</span>
+        </div>
+        <div className="game-page-heading">
+          <div>
+            <p className="eyebrow">DREAMIO ORIGINAL / DEMO {game.number}</p>
+            <h1>
+              {game.name}
+              <span>✦</span>
+            </h1>
+            <p>{game.description}</p>
+          </div>
+          <Link className="button outline-button" href="/lobby">
+            ← Back to the lobby
+          </Link>
+        </div>
+        <ClawpopGame />
+      </main>
+    );
+  }
   const { completeGame, best, rewards, nickname } = useTicketWallet();
   const [playing, setPlaying] = useState(false);
   const [round, setRound] = useState(0);
