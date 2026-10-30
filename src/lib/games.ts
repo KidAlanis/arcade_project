@@ -1,13 +1,13 @@
 export const games = [
   {
     slug: "game-1",
-    name: "Cloud Memory",
-    english: "CLOUD MEMORY",
+    name: "星露爱洗澡",
+    english: "PIXEL BATH",
     number: "01",
     color: "pink",
     symbol: "heart",
     category: "Puzzle",
-    description: "A little match. A little moment of magic.",
+    description: "在星露谷温暖土地上划通水渠，指引清泉流入小女孩的暖汤木桶中！",
     engine: "memory",
   },
   {
