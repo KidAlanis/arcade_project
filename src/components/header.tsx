@@ -28,6 +28,7 @@ export function Header() {
         <nav aria-label="Main navigation">
           {[
             { href: "/lobby", title: "Game lobby", icon: "game" },
+            { href: "/clawpop", title: "Clawpop ✦", icon: "star" },
             { href: "/wardrobe", title: "Dressing room", icon: "shirt" },
             { href: "/shop", title: "Pixel shop", icon: "bag" },
           ].map((link) => (

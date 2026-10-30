@@ -4025,3 +4025,1116 @@ footer > span:last-child {
     bottom: 45px;
   }
 }
+
+/* ==========================================================================
+   CLAWPOP RETRO JAPANESE CRANE MACHINE STYLES
+   Scaled Up & Styled with Dreamio's Main Pastel System
+   ========================================================================== */
+
+.clawpop-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+.clawpop-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  margin: 16px auto 0;
+  max-width: 860px;
+  width: 100%;
+}
+
+/* Cabinet Outer Shell - Dreamio Pastel Lilac System */
+.clawpop-cabinet {
+  position: relative;
+  width: 100%;
+  max-width: 820px;
+  background: linear-gradient(180deg, #f5eaf8 0%, #e8d5ee 100%);
+  border: 6px solid #8b6bbe;
+  border-radius: 24px 24px 16px 16px;
+  box-shadow:
+    inset 0 4px 0 #fff9fd,
+    inset 0 -4px 0 #bca5d5,
+    0 12px 0 #51436e,
+    0 22px 40px rgba(81, 67, 110, 0.28);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Retro CRT Scanlines Effect */
+.clawpop-cabinet.has-scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(81, 67, 110, 0.08) 0px,
+    rgba(81, 67, 110, 0.08) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 40;
+}
+
+/* 1. Cabinet Canopy / Awning */
+.cabinet-canopy {
+  position: relative;
+  background: linear-gradient(180deg, #eed9f5 0%, #d8bbe6 100%);
+  border-bottom: 5px solid #51436e;
+  box-shadow: 0 4px 0 #bca5d5;
+  overflow: hidden;
+}
+
+.canopy-stripes {
+  height: 24px;
+  background: repeating-linear-gradient(
+    45deg,
+    #f2c1d9 0px,
+    #f2c1d9 18px,
+    #fff9e7 18px,
+    #fff9e7 36px,
+    #dcd0f0 36px,
+    #dcd0f0 54px,
+    #cde0f8 54px,
+    #cde0f8 72px
+  );
+  border-bottom: 3px solid #51436e;
+}
+
+.canopy-zigzag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 20px 10px;
+  background: linear-gradient(180deg, #9b7bbe 0%, #825fa8 100%);
+  color: #fffdfd;
+}
+
+.canopy-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.canopy-title {
+  font-family: var(--pixel);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-shadow:
+    3px 3px 0 #51436e,
+    5px 5px 0 #f0badd,
+    -1px -1px 0 #51436e,
+    1px -1px 0 #51436e,
+    -1px 1px 0 #51436e,
+    1px 1px 0 #51436e;
+  color: #fff9e7;
+}
+
+.canopy-subtitle {
+  font-family: var(--pixel);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: #f7e6f3;
+  opacity: 0.9;
+}
+
+.canopy-jp {
+  font-family: var(--pixel);
+  font-size: 13px;
+  background: #51436e;
+  color: #f0badd;
+  padding: 3px 10px;
+  border-radius: 6px;
+  letter-spacing: 1px;
+}
+
+.canopy-star {
+  font-size: 22px;
+  color: #ffe066;
+  text-shadow: 2px 2px 0 #51436e;
+}
+
+.canopy-marquee-lights {
+  display: flex;
+  justify-content: space-around;
+  padding: 5px 12px;
+  background: #51436e;
+}
+
+.canopy-marquee-lights i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffe066;
+  box-shadow: 0 0 7px #ffe066;
+  animation: marqueeBlink 0.9s infinite alternate;
+}
+
+.canopy-marquee-lights i:nth-child(even) {
+  background: #f0badd;
+  box-shadow: 0 0 7px #f0badd;
+  animation-delay: 0.45s;
+}
+
+@keyframes marqueeBlink {
+  0% { opacity: 0.35; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1.15); }
+}
+
+/* 2. Top HUD Bar */
+.cabinet-top-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: #f9f6fd;
+  border-bottom: 3px solid #d4c2e6;
+}
+
+.hud-actions-left {
+  display: flex;
+  gap: 10px;
+}
+
+.hud-pill-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-family: var(--pixel);
+  font-size: 11px;
+  font-weight: 700;
+  background: #fff;
+  border: 2px solid #51436e;
+  border-radius: 14px;
+  box-shadow: 2px 2px 0 #ded3ed;
+  color: #51436e;
+  transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+}
+
+.hud-pill-button:hover {
+  background: #f3ecf8;
+  transform: translateY(-1px);
+}
+
+.hud-pill-button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #ded3ed;
+}
+
+.hud-collection-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Top-Right Plush Trophy Counter - Dreamio Wallet Style */
+.plush-trophy-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #fff9e7;
+  border: 2px solid #e0c995;
+  border-radius: 14px;
+  box-shadow: 3px 3px 0 #f0e2c0;
+  color: #51436e;
+  font-family: var(--pixel);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.plush-trophy-counter:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 4px 4px 0 #e8d4a7;
+}
+
+.plush-trophy-counter:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #e8d4a7;
+}
+
+.trophy-icon {
+  font-size: 18px;
+}
+
+.trophy-label {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: #9276ad;
+}
+
+.trophy-count {
+  font-size: 17px;
+  color: #a98645;
+  font-variant-numeric: tabular-nums;
+  background: #fff;
+  padding: 2px 8px;
+  border-radius: 8px;
+  border: 1.5px solid #e0c995;
+}
+
+.trophy-badge {
+  font-size: 9px;
+  background: #dc9cbd;
+  color: #fff;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+/* 3. Spacious Glass Play Chamber (Enlarged to 480px height) */
+.cabinet-glass-chamber {
+  position: relative;
+  height: 480px;
+  background: linear-gradient(
+    180deg,
+    #9bb8f3 0%,
+    #b8cffb 45%,
+    #fedbe8 80%,
+    #fbead6 100%
+  );
+  border-bottom: 5px solid #51436e;
+  overflow: hidden;
+}
+
+/* Starry Bubbles & Sparkles */
+.starry-bubble-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 18% 25%, rgba(255, 255, 255, 0.45) 7px, transparent 8px),
+    radial-gradient(circle at 75% 15%, rgba(255, 255, 255, 0.4) 9px, transparent 10px),
+    radial-gradient(circle at 88% 40%, rgba(255, 255, 255, 0.35) 6px, transparent 7px),
+    radial-gradient(circle at 45% 25%, rgba(255, 255, 255, 0.3) 5px, transparent 6px),
+    radial-gradient(circle at 28% 50%, rgba(255, 255, 255, 0.25) 8px, transparent 9px),
+    radial-gradient(circle at 65% 55%, rgba(255, 255, 255, 0.3) 7px, transparent 8px);
+  opacity: 0.95;
+}
+
+/* Floating Dreamio Clouds */
+.chamber-cloud {
+  position: absolute;
+  font-size: 32px;
+  opacity: 0.45;
+  pointer-events: none;
+  animation: cloudDrift 14s infinite alternate ease-in-out;
+}
+
+.chamber-cloud.cloud-1 {
+  top: 18%;
+  left: 12%;
+}
+
+.chamber-cloud.cloud-2 {
+  top: 32%;
+  right: 14%;
+  animation-delay: -7s;
+}
+
+@keyframes cloudDrift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(25px); }
+}
+
+/* Glass Specular Sheen (Vertical highlight) */
+.glass-reflection {
+  position: absolute;
+  right: 6%;
+  top: 5%;
+  width: 26px;
+  height: 82%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.85) 30%,
+    rgba(255, 255, 255, 0.25) 65%,
+    rgba(255, 255, 255, 0.7) 100%
+  );
+  border-radius: 14px;
+  filter: blur(1.5px);
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* Claw Top Gantry Track */
+.claw-gantry-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 14px;
+  background: linear-gradient(180deg, #f0e6f8 0%, #cfbedf 100%);
+  border-bottom: 2px solid #51436e;
+  box-shadow: 0 2px 6px rgba(81, 67, 110, 0.2);
+  z-index: 10;
+}
+
+/* Prize Chute in Glass Chamber */
+.chute-wrapper {
+  position: absolute;
+  z-index: 6;
+}
+
+.prize-chute-container {
+  display: inline-block;
+  transition: filter 0.2s ease;
+}
+
+.prize-chute-container.active-glow {
+  filter: drop-shadow(0 0 14px #ffe066);
+}
+
+/* Claw Node (Trolley + Chains + Hub + Arms) */
+.claw-moving-node {
+  position: absolute;
+  z-index: 20;
+  pointer-events: none;
+  transform-origin: 50% 0;
+}
+
+.claw-assembly {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.claw-chain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -2px;
+}
+
+.chain-link {
+  width: 5px;
+  height: 8px;
+  background: #ffe066;
+  border: 1px solid #51436e;
+  border-radius: 2px;
+  margin: -1px 0;
+}
+
+.claw-housing {
+  margin-top: -2px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Grabbed Plush suspended inside claw */
+.claw-grabbed-payload {
+  position: absolute;
+  top: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: payloadWobble 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes payloadWobble {
+  0% { transform: translateX(-50%) rotate(-4deg); }
+  100% { transform: translateX(-50%) rotate(4deg); }
+}
+
+/* Slipping / Falling Plush Tumbling Node */
+.claw-slipping-payload {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 22;
+  pointer-events: none;
+}
+
+/* Lush Stacked Plush Pit (20 plushies layered) */
+.plush-pit-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.plush-in-pit {
+  position: absolute;
+  pointer-events: auto;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.plush-in-pit:hover {
+  transform: translate(-50%, -50%) scale(1.15) rotate(5deg) !important;
+  z-index: 10;
+}
+
+.plush-svg {
+  display: block;
+  filter: drop-shadow(0 5px 8px rgba(81, 67, 110, 0.3));
+  transition: transform 0.2s ease-out;
+}
+
+/* Ticker / Dialogue bar in the glass */
+.glass-ticker-bar {
+  position: absolute;
+  bottom: 10px;
+  left: 95px;
+  right: 16px;
+  background: rgba(81, 67, 110, 0.92);
+  border: 2px solid #d4c2e6;
+  border-radius: 10px;
+  padding: 7px 14px;
+  z-index: 15;
+  box-shadow: 0 3px 10px rgba(81, 67, 110, 0.35);
+}
+
+.glass-ticker-bar span {
+  font-family: var(--pixel);
+  font-size: 12px;
+  color: #fff9e7;
+  letter-spacing: 0.6px;
+  display: block;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 4. Bottom Control Deck - Dreamio Ivory-Lilac Panel */
+.cabinet-control-deck {
+  position: relative;
+  background: linear-gradient(180deg, #faf7fe 0%, #eee4f7 100%);
+  border-top: 4px solid #fff;
+  padding: 20px 24px 24px;
+  box-shadow: inset 0 3px 0 #f9f5fd;
+}
+
+/* Corner Screws */
+.deck-screws {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #bca5d5;
+  border: 2px solid #51436e;
+}
+
+.deck-screws.top-left { top: 10px; left: 10px; }
+.deck-screws.top-right { top: 10px; right: 10px; }
+.deck-screws.bottom-left { bottom: 10px; left: 10px; }
+.deck-screws.bottom-right { bottom: 10px; right: 10px; }
+
+.deck-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Deck Col 1: Credit & Coin */
+.deck-credit-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.credit-display-unit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #51436e;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 2px solid #7d5ca8;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.unit-label {
+  font-family: var(--pixel);
+  font-size: 11px;
+  font-weight: 700;
+  color: #f0badd;
+  letter-spacing: 1px;
+}
+
+.retro-led-box {
+  background: #1b1226;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #333;
+}
+
+.retro-led-glow {
+  font-family: "Courier New", monospace;
+  font-size: 18px;
+  font-weight: 900;
+  color: #52ff88;
+  text-shadow: 0 0 7px #52ff88;
+  letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.insert-coin-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(180deg, #fff275 0%, #f1bb30 100%);
+  border: 3px solid #51436e;
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-family: var(--pixel);
+  font-size: 12px;
+  font-weight: 700;
+  color: #51436e;
+  box-shadow: 0 4px 0 #51436e;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.insert-coin-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #51436e;
+}
+
+.insert-coin-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #51436e;
+}
+
+.coin-slot-graphic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 20px;
+  background: #51436e;
+  border-radius: 3px;
+}
+
+.coin-slot-graphic i {
+  display: block;
+  width: 4px;
+  height: 12px;
+  background: #ffe066;
+  border-radius: 1px;
+}
+
+/* Deck Col 2: D-Pad Directional Controls */
+.deck-dpad-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dpad-title {
+  font-family: var(--pixel);
+  font-size: 10px;
+  font-weight: 700;
+  color: #7d5ca8;
+  letter-spacing: 0.8px;
+}
+
+.dpad-cross {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dpad-row {
+  display: flex;
+  align-items: center;
+}
+
+.dpad-center {
+  width: 38px;
+  height: 38px;
+  background: #6a4c93;
+}
+
+.dpad-btn {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(180deg, #9b7bbe 0%, #7d5ca8 100%);
+  border: 2px solid #51436e;
+  color: #fffdfd;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 2px 0 #51436e;
+  cursor: pointer;
+  transition: transform 0.08s, background 0.08s;
+  user-select: none;
+}
+
+.dpad-btn.up { border-radius: 8px 8px 0 0; }
+.dpad-btn.down { border-radius: 0 0 8px 8px; }
+.dpad-btn.left { border-radius: 8px 0 0 8px; }
+.dpad-btn.right { border-radius: 0 8px 8px 0; }
+
+.dpad-btn:hover:not(:disabled) {
+  background: #ab8ecc;
+}
+
+.dpad-btn:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #51436e;
+  background: #bf9fe0;
+}
+
+.dpad-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Deck Col 3: Big Round DROP CLAW / CATCH Action Button */
+.deck-catch-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.big-drop-button {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffe680 0%, #e697ba 50%, #8b6bbe 100%);
+  border: 4px solid #51436e;
+  box-shadow:
+    inset 0 4px 8px rgba(255, 255, 255, 0.7),
+    0 7px 0 #51436e,
+    0 12px 18px rgba(81, 67, 110, 0.35);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  padding: 0;
+}
+
+.big-drop-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 4px 8px rgba(255, 255, 255, 0.7),
+    0 9px 0 #51436e,
+    0 14px 22px rgba(81, 67, 110, 0.4);
+}
+
+.big-drop-button:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.5),
+    0 4px 0 #51436e,
+    0 6px 10px rgba(81, 67, 110, 0.3);
+}
+
+.big-drop-button.glow-pulse {
+  animation: dropButtonPulse 1.2s infinite alternate;
+}
+
+@keyframes dropButtonPulse {
+  0% { filter: drop-shadow(0 0 5px rgba(230, 151, 186, 0.5)); }
+  100% { filter: drop-shadow(0 0 16px rgba(255, 230, 128, 0.95)); }
+}
+
+.big-drop-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
+.drop-button-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.drop-button-icon {
+  font-size: 18px;
+  color: #fffdfd;
+  text-shadow: 1px 1px 0 #51436e;
+  line-height: 1;
+}
+
+.drop-button-text {
+  font-family: var(--pixel);
+  font-size: 15px;
+  font-weight: 700;
+  color: #fffdfd;
+  letter-spacing: 0.8px;
+  text-shadow: 1px 1px 0 #51436e;
+}
+
+.drop-button-sub {
+  font-family: var(--pixel);
+  font-size: 9px;
+  color: #fff9e7;
+  opacity: 0.9;
+}
+
+/* 5. Modals & Dialogs - Dreamio Window Style */
+.clawpop-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(81, 67, 110, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  backdrop-filter: blur(3px);
+  padding: 16px;
+}
+
+.clawpop-modal-bubble {
+  position: relative;
+  background: #fffdfd;
+  border: 4px solid #51436e;
+  border-radius: 18px;
+  box-shadow: 6px 6px 0 #d7c8e8;
+  padding: 24px 22px;
+  text-align: center;
+  max-width: 440px;
+  width: 100%;
+  animation: bubblePop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes bubblePop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.win-bubble {
+  background: linear-gradient(180deg, #fffbf7 0%, #fcf3f8 100%);
+  border-color: #8b6bbe;
+}
+
+.fail-bubble {
+  background: linear-gradient(180deg, #f9f6fc 0%, #eee8f7 100%);
+  border-color: #7d5ca8;
+}
+
+.bubble-sparkles {
+  font-size: 16px;
+  color: #f1bb30;
+  margin-bottom: 6px;
+  letter-spacing: 4px;
+}
+
+.bubble-sweat {
+  font-size: 16px;
+  color: #3a86ff;
+  margin-bottom: 6px;
+}
+
+.bubble-title {
+  font-family: var(--pixel);
+  font-size: 22px;
+  color: #51436e;
+  margin-bottom: 8px;
+  text-wrap: balance;
+}
+
+.bubble-plush-stage {
+  margin: 12px auto;
+  display: flex;
+  justify-content: center;
+  animation: plushCheer 1s infinite alternate ease-in-out;
+}
+
+@keyframes plushCheer {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-10px) scale(1.06); }
+}
+
+.bubble-toy-name {
+  font-family: var(--pixel);
+  font-size: 18px;
+  color: #8b6bbe;
+  margin: 8px 0 3px;
+}
+
+.bubble-tagline {
+  font-size: 12px;
+  color: #9276ad;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+
+.bubble-personality {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #51436e;
+  text-wrap: pretty;
+  margin-bottom: 8px;
+}
+
+.bubble-phrase {
+  font-size: 14px;
+  font-style: italic;
+  color: #d92e6b;
+  margin-bottom: 14px;
+}
+
+.bubble-message {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #51436e;
+  text-wrap: pretty;
+  margin-bottom: 10px;
+}
+
+.bubble-hint {
+  font-size: 12px;
+  color: #9276ad;
+  margin-bottom: 18px;
+}
+
+.bubble-reward-badge {
+  display: inline-block;
+  background: #fff9e7;
+  border: 2px solid #e0c995;
+  color: #a98645;
+  font-family: var(--pixel);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.bubble-action-button {
+  background: linear-gradient(180deg, #9b7bbe 0%, #7d5ca8 100%);
+  border: 3px solid #51436e;
+  border-radius: 14px;
+  color: #fff;
+  font-family: var(--pixel);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 22px;
+  box-shadow: 0 4px 0 #51436e;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.bubble-action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #51436e;
+}
+
+.bubble-action-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #51436e;
+}
+
+/* 6. Collection Basket Modal (All 12 Plushies) */
+.collection-bubble {
+  max-width: 540px;
+  text-align: left;
+}
+
+.collection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #e2d7ed;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.collection-header h3 {
+  font-family: var(--pixel);
+  font-size: 16px;
+  color: #51436e;
+}
+
+.collection-close-btn {
+  background: #f3ecf8;
+  border: 2px solid #51436e;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #51436e;
+  cursor: pointer;
+}
+
+.collection-sub {
+  font-size: 12px;
+  color: #9276ad;
+  margin-bottom: 14px;
+}
+
+.collection-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px;
+  margin-bottom: 16px;
+}
+
+.collection-card {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: #fcf9fe;
+  border: 2px solid #d4c2e6;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 2px 2px 0 #e8dff2;
+}
+
+.collection-card.locked {
+  opacity: 0.6;
+  background: #f4eff8;
+}
+
+.card-sprite {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.locked-badge {
+  position: absolute;
+  font-family: var(--pixel);
+  font-size: 22px;
+  color: #bca5d5;
+  font-weight: bold;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.card-info strong {
+  font-size: 13px;
+  color: #51436e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-info strong small {
+  font-size: 11px;
+  color: #8b6bbe;
+}
+
+.card-rarity {
+  font-family: var(--pixel);
+  font-size: 9px;
+  color: #d94b7c;
+  font-weight: 700;
+}
+
+.card-phrase {
+  font-size: 11px;
+  color: #9276ad;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: #51436e;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 7. Footer Tips */
+.clawpop-footer-tips {
+  background: #fffdfd;
+  border: 3px solid #e2d7ed;
+  border-radius: 14px;
+  padding: 14px 22px;
+  box-shadow: 4px 4px 0 #ded3ed;
+  max-width: 820px;
+  width: 100%;
+}
+
+.tips-badge {
+  font-family: var(--pixel);
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b6bbe;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.clawpop-footer-tips p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #51436e;
+}
+
+/* 8. Game Cards Cover Preview for Clawpop */
+.clawpop-cover {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #eed9f5 0%, #b8cffb 100%);
+  overflow: hidden;
+}
+
+.cover-claw-arm {
+  font-size: 34px;
+  animation: coverClawBob 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes coverClawBob {
+  0% { transform: translateY(-4px); }
+  100% { transform: translateY(4px); }
+}
+
+.cover-plush-preview {
+  position: relative;
+  font-size: 42px;
+  margin-top: -6px;
+}
+
+.cover-sparkle {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  font-size: 18px;
+  color: #ffe066;
+  text-shadow: 1px 1px 0 #51436e;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cabinet-glass-chamber {
+    height: 400px;
+  }
+  .deck-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .canopy-title {
+    font-size: 24px;
+  }
+}
+

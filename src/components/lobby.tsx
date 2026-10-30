@@ -56,7 +56,7 @@ export function Lobby() {
           title="Little games. Big smiles."
         >
           <span className="small-note">
-            3 playable demos · More little adventures on the way
+            4 playable games · Clawpop crane arcade now open! ✦
           </span>
         </SectionHeading>
         <GameCards />
