@@ -1,8 +1,8 @@
-"use client";
-
-import React from "react";
+import { PlayerUnavailable } from "@/components/player-unavailable";
 import { PixelBathGame } from "@/components/pixel-bath/pixel-bath-game";
-
-export default function Game1Page() {
-  return <PixelBathGame />;
+import { pageAccess } from "@/lib/server/session";
+export default async function Game1Page() {
+ const unavailable = await pageAccess("/games/game-1");
+ if (unavailable) return <PlayerUnavailable message={unavailable} />;
+ return <PixelBathGame />;
 }

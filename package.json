@@ -7,18 +7,28 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/lib/*.test.ts"
+    "test": "node --conditions=react-server --import tsx --test src/lib/*.test.ts",
+    "db:inspect": "node --import tsx scripts/db-inspect.mjs",
+    "db:migrate": "node --import tsx scripts/db-migrate.mjs"
   },
   "dependencies": {
+    "better-auth": "1.7.14",
+    "kysely": "0.29.7",
     "next": "latest",
+    "pg": "8.23.1",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "server-only": "0.0.1"
   },
   "devDependencies": {
-    "typescript": "latest",
     "@types/node": "latest",
+    "@types/pg": "8.23.1",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "tsx": "latest"
+    "tsx": "latest",
+    "typescript": "latest"
+  },
+  "engines": {
+    "node": ">=22.15.0"
   }
 }

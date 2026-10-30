@@ -1,84 +1,107 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
 import { useTicketWallet } from "./ticket-wallet";
-import { PixelAvatar, PixelIcon } from "./pixel-art";
 
 export function Header() {
-  const { tickets, nickname, look, hair, skin, logout, storageAvailable } =
+  const { tickets, user, status, clearAccount, refresh, error } =
     useTicketWallet();
   const path = usePathname();
-  if (path === "/") return null;
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
+  async function signOut() {
+    setSigningOut(true);
+    setSignOutError(null);
+    clearAccount();
+    try {
+      const result = await authClient.signOut();
+      if (result.error)
+        throw new Error("Unable to sign out. Please try again.");
+      window.location.assign("/");
+    } catch {
+      setSignOutError("Unable to sign out. Please try again.");
+      setSigningOut(false);
+      await refresh();
+    }
+  }
   return (
     <>
-      <div className="announcement">
-        <span>✦ WELCOME TO YOUR LITTLE PIXEL WORLD ✦</span>
-        <span>SMALL PIXELS. BIG HAPPY FEELINGS.</span>
-      </div>
       <header className="header">
-        <Link href="/" className="brand" aria-label="Dreamio home">
-          <span className="brand-mark">
-            <PixelIcon name="star" size={28} />
+        <Link href="/" className="brand" aria-label="Neon Quarter home">
+          <span className="brand-mark" aria-hidden="true">
+            NQ
           </span>
           <span>
-            dreamio<span className="brand-dot">✦</span>
-            <small>PLAY A LITTLE. DREAM A LOT.</small>
+            NEON<span className="brand-second">QUARTER</span>
           </span>
         </Link>
         <nav aria-label="Main navigation">
-          {[
-            { href: "/lobby", title: "Game lobby", icon: "game" },
-            { href: "/clawpop", title: "Clawpop ✦", icon: "star" },
-            { href: "/wardrobe", title: "Dressing room", icon: "shirt" },
-            { href: "/shop", title: "Pixel shop", icon: "bag" },
-          ].map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              aria-current={path === link.href ? "page" : undefined}
-            >
-              <PixelIcon name={link.icon} size={17} />
-              {link.title}
-            </Link>
-          ))}
-        </nav>
-        <div className="header-actions">
+          <Link href="/" aria-current={path === "/" ? "page" : undefined}>
+            Arcade floor
+          </Link>
           <Link
             href="/shop"
-            className="wallet"
-            aria-label={`My Dream Points ${tickets}`}
+            aria-current={path === "/shop" ? "page" : undefined}
           >
-            <PixelIcon name="coin" size={21} />
-            <strong aria-live="polite">{tickets.toLocaleString()}</strong>
-            <span>pts</span>
+            Prize shop ↗
           </Link>
-          {nickname ? (
-            <details className="profile-menu">
-              <summary>
-                <span className="mini-avatar">
-                  <PixelAvatar look={look} hair={hair} skin={skin} />
-                </span>
-                <span>{nickname}</span>
-                <span className="chevron">⌄</span>
-              </summary>
-              <div>
-                <Link href="/wardrobe">My pixel avatar</Link>
-                <button onClick={logout}>Sign out of local demo</button>
-              </div>
-            </details>
-          ) : (
-            <Link className="login-link" href="/#login">
-              Sign in <span>↗</span>
+          {user ? (
+            <Link
+              href="/shelf"
+              aria-current={path === "/shelf" ? "page" : undefined}
+            >
+              My shelf
             </Link>
-          )}
+          ) : null}
+        </nav>
+        <div className="header-player">
+          <div
+            className="wallet"
+            aria-label={
+              tickets === null
+                ? "Ticket wallet unavailable until signed in"
+                : `${tickets} tickets`
+            }
+          >
+            <span aria-hidden="true">▤</span>
+            <span>
+              <strong aria-live="polite" aria-atomic="true">
+                {tickets === null ? "—" : tickets.toLocaleString()}
+              </strong>{" "}
+              <span className="wallet-label">TICKETS</span>
+            </span>
+          </div>
+          <div className="account-controls">
+            {signingOut ? (
+              <span role="status">Signing out…</span>
+            ) : status === "loading" ? (
+              <span role="status">Loading player…</span>
+            ) : user ? (
+              <>
+                <span className="player-name" title={user.name}>
+                  {user.name}
+                </span>
+                <button className="text-button" onClick={signOut}>
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <Link href="/sign-in">Sign in / Join</Link>
+            )}
+          </div>
         </div>
       </header>
-      {!storageAvailable && (
-        <p className="storage-warning" role="status">
-          Browser storage is unavailable. Progress may be lost when you close
-          this page.
+      {signOutError ? (
+        <p className="header-notice" role="alert">
+          {signOutError}
         </p>
-      )}
+      ) : error ? (
+        <p className="header-notice" role="status">
+          {error}
+        </p>
+      ) : null}
     </>
   );
 }

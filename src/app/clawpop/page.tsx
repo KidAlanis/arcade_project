@@ -1,3 +1,5 @@
+import { PlayerUnavailable } from "@/components/player-unavailable";
+import { pageAccess } from "@/lib/server/session";
 import Link from "next/link";
 import { ClawpopGame } from "@/components/clawpop-game";
 
@@ -7,7 +9,9 @@ export const metadata = {
     "An interactive Japanese pixel claw machine filled with cute round plushies! Move the claw, test the 50% drop chance, and build your plushie collection.",
 };
 
-export default function ClawpopPage() {
+export default async function ClawpopPage() {
+ const unavailable = await pageAccess("/clawpop");
+ if (unavailable) return <PlayerUnavailable message={unavailable} />;
   return (
     <main className="clawpop-page-container">
       <div className="page-breadcrumb">

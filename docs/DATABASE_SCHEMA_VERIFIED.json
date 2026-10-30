@@ -1,0 +1,633 @@
+{
+  "projectRef": "jiaaqwdujaclbxulndjc",
+  "verifiedDate": "2026-10-30",
+  "tables": [
+    {
+      "table_name": "arcade_account",
+      "rls_enabled": true,
+      "anon_access": false,
+      "authenticated_access": false,
+      "policy_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "accountId",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "providerId",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "userId",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "accessToken",
+          "type": "text",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "refreshToken",
+          "type": "text",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "idToken",
+          "type": "text",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "accessTokenExpiresAt",
+          "type": "timestamp with time zone",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "refreshTokenExpiresAt",
+          "type": "timestamp with time zone",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "scope",
+          "type": "text",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "password",
+          "type": "text",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "arcade_account_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "arcade_account_provider_account_key",
+          "definition": "UNIQUE (\"providerId\", \"accountId\")"
+        },
+        {
+          "name": "arcade_account_userId_fkey",
+          "definition": "FOREIGN KEY (\"userId\") REFERENCES arcade_user(id) ON DELETE CASCADE"
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX arcade_account_pkey ON public.arcade_account USING btree (id)",
+        "CREATE INDEX \"arcade_account_userId_idx\" ON public.arcade_account USING btree (\"userId\")",
+        "CREATE UNIQUE INDEX arcade_account_provider_account_key ON public.arcade_account USING btree (\"providerId\", \"accountId\")"
+      ]
+    },
+    {
+      "table_name": "arcade_game_results",
+      "rls_enabled": true,
+      "anon_access": false,
+      "authenticated_access": false,
+      "policy_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "game_id",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "run_id",
+          "type": "uuid",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "outcome",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "claimed_at",
+          "type": "timestamp with time zone",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "awarded_tickets",
+          "type": "integer",
+          "nullable": "YES",
+          "default": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "arcade_game_results_awarded_tickets_check",
+          "definition": "CHECK ((awarded_tickets > 0))"
+        },
+        {
+          "name": "arcade_game_results_check",
+          "definition": "CHECK ((((claimed_at IS NULL) AND (awarded_tickets IS NULL)) OR ((claimed_at IS NOT NULL) AND (awarded_tickets IS NOT NULL))))"
+        },
+        {
+          "name": "arcade_game_results_outcome_check",
+          "definition": "CHECK ((outcome = ANY (ARRAY['win'::text, 'loss'::text])))"
+        },
+        {
+          "name": "arcade_game_results_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "arcade_game_results_run_id_key",
+          "definition": "UNIQUE (run_id)"
+        },
+        {
+          "name": "arcade_game_results_user_id_fkey",
+          "definition": "FOREIGN KEY (user_id) REFERENCES arcade_user(id) ON DELETE CASCADE"
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX arcade_game_results_pkey ON public.arcade_game_results USING btree (id)",
+        "CREATE UNIQUE INDEX arcade_game_results_run_id_key ON public.arcade_game_results USING btree (run_id)",
+        "CREATE INDEX arcade_game_results_user_idx ON public.arcade_game_results USING btree (user_id)"
+      ]
+    },
+    {
+      "table_name": "arcade_prizes",
+      "rls_enabled": true,
+      "anon_access": false,
+      "authenticated_access": false,
+      "policy_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": "NO",
+          "default": "''::text"
+        },
+        {
+          "name": "price",
+          "type": "integer",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "stock",
+          "type": "integer",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "nullable": "NO",
+          "default": "false"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "arcade_prizes_id_check",
+          "definition": "CHECK ((id ~ '^[a-z0-9][a-z0-9-]{0,79}$'::text))"
+        },
+        {
+          "name": "arcade_prizes_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "arcade_prizes_price_check",
+          "definition": "CHECK ((price > 0))"
+        },
+        {
+          "name": "arcade_prizes_stock_check",
+          "definition": "CHECK ((stock >= 0))"
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX arcade_prizes_pkey ON public.arcade_prizes USING btree (id)"
+      ]
+    },
+    {
+      "table_name": "arcade_rate_limit",
+      "rls_enabled": true,
+      "anon_access": false,
+      "authenticated_access": false,
+      "policy_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "key",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "count",
+          "type": "integer",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "lastRequest",
+          "type": "bigint",
+          "nullable": "NO",
+          "default": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "arcade_rate_limit_key_key",
+          "definition": "UNIQUE (key)"
+        },
+        {
+          "name": "arcade_rate_limit_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX arcade_rate_limit_pkey ON public.arcade_rate_limit USING btree (id)",
+        "CREATE UNIQUE INDEX arcade_rate_limit_key_key ON public.arcade_rate_limit USING btree (key)"
+      ]
+    },
+    {
+      "table_name": "arcade_redemptions",
+      "rls_enabled": true,
+      "anon_access": false,
+      "authenticated_access": false,
+      "policy_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "user_id",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "prize_id",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "prize_name",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "price",
+          "type": "integer",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "request_id",
+          "type": "uuid",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "redeemed_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "arcade_redemptions_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "arcade_redemptions_price_check",
+          "definition": "CHECK ((price > 0))"
+        },
+        {
+          "name": "arcade_redemptions_prize_id_fkey",
+          "definition": "FOREIGN KEY (prize_id) REFERENCES arcade_prizes(id) ON DELETE RESTRICT"
+        },
+        {
+          "name": "arcade_redemptions_user_id_fkey",
+          "definition": "FOREIGN KEY (user_id) REFERENCES arcade_user(id) ON DELETE CASCADE"
+        },
+        {
+          "name": "arcade_redemptions_user_id_request_id_key",
+          "definition": "UNIQUE (user_id, request_id)"
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX arcade_redemptions_pkey ON public.arcade_redemptions USING btree (id)",
+        "CREATE UNIQUE INDEX arcade_redemptions_user_id_request_id_key ON public.arcade_redemptions USING btree (user_id, request_id)",
+        "CREATE INDEX arcade_redemptions_shelf_idx ON public.arcade_redemptions USING btree (user_id, redeemed_at DESC, id DESC)",
+        "CREATE INDEX arcade_redemptions_prize_idx ON public.arcade_redemptions USING btree (prize_id)"
+      ]
+    },
+    {
+      "table_name": "arcade_session",
+      "rls_enabled": true,
+      "anon_access": false,
+      "authenticated_access": false,
+      "policy_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "expiresAt",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "token",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "ipAddress",
+          "type": "text",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "userAgent",
+          "type": "text",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "userId",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        }
+      ],
+      "constraints": [
+        {
+          "name": "arcade_session_pkey",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "arcade_session_token_key",
+          "definition": "UNIQUE (token)"
+        },
+        {
+          "name": "arcade_session_userId_fkey",
+          "definition": "FOREIGN KEY (\"userId\") REFERENCES arcade_user(id) ON DELETE CASCADE"
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX arcade_session_pkey ON public.arcade_session USING btree (id)",
+        "CREATE UNIQUE INDEX arcade_session_token_key ON public.arcade_session USING btree (token)",
+        "CREATE INDEX \"arcade_session_userId_idx\" ON public.arcade_session USING btree (\"userId\")",
+        "CREATE INDEX arcade_session_expiry_idx ON public.arcade_session USING btree (\"expiresAt\")"
+      ]
+    },
+    {
+      "table_name": "arcade_user",
+      "rls_enabled": true,
+      "anon_access": false,
+      "authenticated_access": false,
+      "policy_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "emailVerified",
+          "type": "boolean",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "image",
+          "type": "text",
+          "nullable": "YES",
+          "default": null
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": "CURRENT_TIMESTAMP"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "arcade_user_email_key",
+          "definition": "UNIQUE (email)"
+        },
+        {
+          "name": "arcade_user_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX arcade_user_pkey ON public.arcade_user USING btree (id)",
+        "CREATE UNIQUE INDEX arcade_user_email_key ON public.arcade_user USING btree (email)"
+      ]
+    },
+    {
+      "table_name": "arcade_verification",
+      "rls_enabled": true,
+      "anon_access": false,
+      "authenticated_access": false,
+      "policy_count": 0,
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "identifier",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "value",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "expiresAt",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": "CURRENT_TIMESTAMP"
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": "CURRENT_TIMESTAMP"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "arcade_verification_pkey",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX arcade_verification_pkey ON public.arcade_verification USING btree (id)",
+        "CREATE INDEX arcade_verification_identifier_idx ON public.arcade_verification USING btree (identifier)"
+      ]
+    },
+    {
+      "table_name": "arcade_wallets",
+      "rls_enabled": true,
+      "anon_access": false,
+      "authenticated_access": false,
+      "policy_count": 0,
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "text",
+          "nullable": "NO",
+          "default": null
+        },
+        {
+          "name": "balance",
+          "type": "integer",
+          "nullable": "NO",
+          "default": "0"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO",
+          "default": "now()"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "arcade_wallets_balance_check",
+          "definition": "CHECK ((balance >= 0))"
+        },
+        {
+          "name": "arcade_wallets_pkey",
+          "definition": "PRIMARY KEY (user_id)"
+        },
+        {
+          "name": "arcade_wallets_user_id_fkey",
+          "definition": "FOREIGN KEY (user_id) REFERENCES arcade_user(id) ON DELETE CASCADE"
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX arcade_wallets_pkey ON public.arcade_wallets USING btree (user_id)"
+      ]
+    }
+  ]
+}

@@ -5138,3 +5138,192 @@ footer > span:last-child {
   }
 }
 
+
+/* Player accounts and the shared server-backed wallet. */
+.header {
+  height: auto;
+  min-height: 110px;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  flex-wrap: wrap;
+}
+.header-player {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.account-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: 12px;
+}
+.account-controls a,
+.text-button {
+  color: var(--pink);
+}
+.text-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.player-name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.header-notice {
+  max-width: 1212px;
+  margin: 12px auto;
+  padding: 12px 20px;
+  background: #ff65c50d;
+  color: #e6c5da;
+  border: 1px solid #ff65c538;
+  font-size: 13px;
+  line-height: 1.7;
+}
+button,
+input {
+  font: inherit;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--lime);
+  outline-offset: 4px;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+button.button {
+  border: 0;
+  cursor: pointer;
+}
+.auth-page {
+  min-height: 75vh;
+  display: grid;
+  place-items: center;
+  padding-top: 65px;
+  padding-bottom: 65px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  border: 1px solid var(--line);
+  padding: 32px;
+  background: var(--panel);
+  box-shadow: 7px 7px 0 #ff65c51a;
+}
+.auth-card h1,
+.player-page h1 {
+  font-size: clamp(27px, 4vw, 40px);
+  letter-spacing: -1px;
+}
+.auth-description,
+.auth-switch,
+.auth-back,
+.field-hint {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.auth-card form {
+  display: grid;
+  gap: 18px;
+  margin: 25px 0;
+}
+.auth-card label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+.auth-card input {
+  width: 100%;
+  padding: 12px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid #56526b;
+  border-radius: 0;
+}
+.auth-card .field-hint {
+  margin: -10px 0 0;
+}
+.auth-switch a {
+  color: var(--pink);
+}
+.auth-message {
+  color: #f5d0e9;
+  background: #ff65c510;
+  border: 1px solid #ff65c540;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.player-page {
+  min-height: 70vh;
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+.player-page > p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.prize-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 24px;
+  margin: 35px 0;
+}
+.prize-card,
+.empty-shelf {
+  padding: 28px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.prize-card h2,
+.empty-shelf h2 {
+  font-size: 23px;
+  overflow-wrap: anywhere;
+}
+.prize-card p,
+.empty-shelf p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.empty-shelf {
+  margin: 30px 0;
+}
+@media (max-width: 620px) {
+  .header-player {
+    margin-left: auto;
+    gap: 10px;
+  }
+  .header-player .wallet {
+    padding: 8px;
+  }
+  .account-controls {
+    font-size: 10px;
+  }
+  .player-name {
+    max-width: 80px;
+  }
+  .header .brand {
+    font-size: 10px;
+    gap: 7px;
+  }
+  .header .brand-mark {
+    font-size: 14px;
+  }
+  .auth-card {
+    padding: 24px;
+  }
+  .header-notice {
+    margin: 10px 20px;
+  }
+}
