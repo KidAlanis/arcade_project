@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { TicketWalletProvider } from "@/components/ticket-wallet";
 import "./globals.css";
+import { authSetupMessage } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Neon Quarter — Your neighborhood arcade",
@@ -14,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body>
-        <TicketWalletProvider>
+        <TicketWalletProvider setupMessage={authSetupMessage()}>
           <Header />
           {children}
           <footer>

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { games } from "@/lib/games";
+import { pageAccess } from "@/lib/server/session";
+import { PlayerUnavailable } from "@/components/player-unavailable";
 
-export function generateStaticParams() {
-  return games.map(({ slug }) => ({ slug }));
-}
+export const dynamic = "force-dynamic";
 export default async function GamePage({
   params,
 }: {
@@ -13,6 +13,8 @@ export default async function GamePage({
   const { slug } = await params;
   const game = games.find((game) => game.slug === slug);
   if (!game) notFound();
+  const issue = await pageAccess(`/games/${slug}`);
+  if (issue) return <PlayerUnavailable message={issue} />;
   return (
     <main className="placeholder">
       <p className="eyebrow">CABINET {game.number}</p>
