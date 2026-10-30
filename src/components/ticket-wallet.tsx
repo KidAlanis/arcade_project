@@ -1,4 +1,5 @@
 "use client";
+import { initialDream } from "@/lib/dreamio";
 import {
   createContext,
   useCallback,
@@ -251,5 +252,19 @@ export function useTicketWallet() {
   const wallet = useContext(TicketContext);
   if (!wallet)
     throw new Error("useTicketWallet must be used inside TicketWalletProvider");
-  return wallet;
+  // Compatibility for the merged Dreamio UI. Client-reported rewards stay disabled.
+  const defaults = initialDream();
+  return { ...defaults, ...wallet, tickets: wallet.tickets ?? 0,
+    nickname: wallet.user?.name ?? "", ready: wallet.status === "ready",
+    storageAvailable: true,
+    login: (_name: string) => { window.location.assign("/sign-in"); return false; },
+    logout: wallet.clearAccount,
+    addTickets: (_amount: number) => false,
+    spendTickets: (_amount: number) => false,
+    completeGame: (_slug: string, _score: number) => 0,
+    checkIn: () => 0,
+    purchase: (_id: string) => false,
+    equip: (_id: string) => false,
+    appearance: (_kind: "hair" | "skin", _value: number) => {},
+  };
 }

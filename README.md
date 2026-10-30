@@ -34,3 +34,7 @@ See [migration verification report](docs/MIGRATION_REVIEW.md) for actual schema/
 - `src/app/globals.css` — existing dark/neon design and account styles.
 
 Client integration uses `earnTickets(serverVerifiedResultId)` and `redeemPrize(prizeId, requestId)`; arbitrary `addTickets(amount)` / `spendTickets(amount)` are no longer available. See the full guide before adding a game's reward endpoint.
+
+## Integration with latest main (PR merge)
+
+Main now includes Dreamio, Pixel Bath and Clawpop. Their game source is preserved and dedicated game pages require sign-in. The shared wallet is still server-authoritative. A compatibility adapter keeps the new UI compiling but deliberately rejects legacy arbitrary add/spend, daily rewards, score rewards and client-only purchases. Legacy wardrobe equip/appearance currently return defaults/no-op; durable cosmetics and validated game rewards need follow-up integration. The shop route uses the secure Postgres catalog. No legacy localStorage balance is imported. Earlier connected tests predate this merge; the merged tree passes 17 tests and production build but requires browser regression testing of the new Dreamio UI.

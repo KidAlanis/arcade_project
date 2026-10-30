@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
+import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { TicketWalletProvider } from "@/components/ticket-wallet";
 import "./globals.css";
 import { authSetupMessage } from "@/lib/auth";
-
 export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
-  title: "Neon Quarter — Your neighborhood arcade",
+  title: "Dreamio · Your cozy pixel playground",
   description:
-    "A little friendly competition. A lot of neon. Play, earn tickets, and visit the prize shop.",
+    "Play little games, collect Dream Points, and style your own pixel avatar. Play a little. Dream a lot.",
 };
 export default function RootLayout({
   children,
@@ -20,16 +19,7 @@ export default function RootLayout({
         <TicketWalletProvider setupMessage={authSetupMessage()}>
           <Header />
           {children}
-          <footer>
-            <span>
-              NEON QUARTER{" "}
-              <span className="dim">© {new Date().getFullYear()}</span>
-            </span>
-            <span>GOOD GAMES. GREAT COMPANY.</span>
-            <span className="footer-light">
-              ● <span>ALL PLAYERS WELCOME</span>
-            </span>
-          </footer>
+          <Footer />
         </TicketWalletProvider>
       </body>
     </html>

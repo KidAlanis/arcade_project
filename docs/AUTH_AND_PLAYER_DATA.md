@@ -133,3 +133,7 @@ The migration report records connected checks already completed. Remaining broad
 - Switch accounts and sign out across tabs: old balances and shelves disappear and the header reflects the active account.
 
 References read during implementation: [Better Auth Next.js](https://better-auth.com/docs/integrations/next), [PostgreSQL adapter](https://better-auth.com/docs/adapters/postgresql), [email/password](https://better-auth.com/docs/authentication/email-password), [database/core schema](https://better-auth.com/docs/concepts/database), [node-postgres transactions](https://node-postgres.com/features/transactions), [Supabase connections](https://supabase.com/docs/guides/database/connecting-to-postgres).
+
+## Integration with latest main (PR merge)
+
+Main now includes Dreamio, Pixel Bath and Clawpop. Their game source is preserved and dedicated game pages require sign-in. The shared wallet is still server-authoritative. A compatibility adapter keeps the new UI compiling but deliberately rejects legacy arbitrary add/spend, daily rewards, score rewards and client-only purchases. Legacy wardrobe equip/appearance currently return defaults/no-op; durable cosmetics and validated game rewards need follow-up integration. The shop route uses the secure Postgres catalog. No legacy localStorage balance is imported. Earlier connected tests predate this merge; the merged tree passes 17 tests and production build but requires browser regression testing of the new Dreamio UI.
