@@ -2,37 +2,82 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTicketWallet } from "./ticket-wallet";
+import { PixelAvatar, PixelIcon } from "./pixel-art";
 
 export function Header() {
-  const { tickets } = useTicketWallet();
+  const { tickets, nickname, look, hair, skin, logout, storageAvailable } =
+    useTicketWallet();
   const path = usePathname();
+  if (path === "/") return null;
   return (
-    <header className="header">
-      <Link href="/" className="brand" aria-label="Neon Quarter home">
-        <span className="brand-mark" aria-hidden="true">
-          NQ
-        </span>
-        <span>
-          NEON<span className="brand-second">QUARTER</span>
-        </span>
-      </Link>
-      <nav aria-label="Main navigation">
-        <Link href="/" aria-current={path === "/" ? "page" : undefined}>
-          Arcade floor
-        </Link>
-        <Link href="/shop" aria-current={path === "/shop" ? "page" : undefined}>
-          Prize shop <span aria-hidden="true">↗</span>
-        </Link>
-      </nav>
-      <div className="wallet">
-        <span aria-hidden="true">▤</span>
-        <span>
-          <strong aria-live="polite" aria-atomic="true">
-            {tickets.toLocaleString()}
-          </strong>{" "}
-          <span className="wallet-label">TICKETS</span>
-        </span>
+    <>
+      <div className="announcement">
+        <span>✦ WELCOME TO YOUR LITTLE PIXEL WORLD ✦</span>
+        <span>SMALL PIXELS. BIG HAPPY FEELINGS.</span>
       </div>
-    </header>
+      <header className="header">
+        <Link href="/" className="brand" aria-label="Dreamio home">
+          <span className="brand-mark">
+            <PixelIcon name="star" size={28} />
+          </span>
+          <span>
+            dreamio<span className="brand-dot">✦</span>
+            <small>PLAY A LITTLE. DREAM A LOT.</small>
+          </span>
+        </Link>
+        <nav aria-label="Main navigation">
+          {[
+            { href: "/lobby", title: "Game lobby", icon: "game" },
+            { href: "/wardrobe", title: "Dressing room", icon: "shirt" },
+            { href: "/shop", title: "Pixel shop", icon: "bag" },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={path === link.href ? "page" : undefined}
+            >
+              <PixelIcon name={link.icon} size={17} />
+              {link.title}
+            </Link>
+          ))}
+        </nav>
+        <div className="header-actions">
+          <Link
+            href="/shop"
+            className="wallet"
+            aria-label={`My Dream Points ${tickets}`}
+          >
+            <PixelIcon name="coin" size={21} />
+            <strong aria-live="polite">{tickets.toLocaleString()}</strong>
+            <span>pts</span>
+          </Link>
+          {nickname ? (
+            <details className="profile-menu">
+              <summary>
+                <span className="mini-avatar">
+                  <PixelAvatar look={look} hair={hair} skin={skin} />
+                </span>
+                <span>{nickname}</span>
+                <span className="chevron">⌄</span>
+              </summary>
+              <div>
+                <Link href="/wardrobe">My pixel avatar</Link>
+                <button onClick={logout}>Sign out of local demo</button>
+              </div>
+            </details>
+          ) : (
+            <Link className="login-link" href="/#login">
+              Sign in <span>↗</span>
+            </Link>
+          )}
+        </div>
+      </header>
+      {!storageAvailable && (
+        <p className="storage-warning" role="status">
+          Browser storage is unavailable. Progress may be lost when you close
+          this page.
+        </p>
+      )}
+    </>
   );
 }
