@@ -1,6 +1,6 @@
 "use client";
 
-// Web Audio synthesizer for Stardew-style cozy pixel sound effects
+// Web Audio synthesizer for Dreamio Sky City & Pixel Bath sound effects
 class BathSoundFX {
   private ctx: AudioContext | null = null;
   public enabled: boolean = true;
@@ -23,7 +23,7 @@ class BathSoundFX {
     return this.ctx;
   }
 
-  // Soft digging soil sound (throttled)
+  // Soft airy cloud digging sound (throttled)
   public dig() {
     const now = performance.now();
     if (now - this.lastDigTime < 50) return;
@@ -32,26 +32,28 @@ class BathSoundFX {
     const ctx = this.getContext();
     if (!ctx) return;
 
+    // Airy cloud puff + gentle star chime
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const filter = ctx.createBiquadFilter();
 
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(80 + Math.random() * 40, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.05);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(320 + Math.random() * 80, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.08);
 
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(250, ctx.currentTime);
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(450, ctx.currentTime);
+    filter.Q.setValueAtTime(1.2, ctx.currentTime);
 
-    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+    gain.gain.setValueAtTime(0.07, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
 
     osc.connect(filter);
     filter.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start();
-    osc.stop(ctx.currentTime + 0.05);
+    osc.stop(ctx.currentTime + 0.08);
   }
 
   // Water drop / splash
@@ -63,71 +65,68 @@ class BathSoundFX {
     const gain = ctx.createGain();
 
     osc.type = "sine";
-    const freq = 600 + Math.random() * 300;
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(freq * 1.5, ctx.currentTime + 0.06);
+    osc.frequency.setValueAtTime(700 + Math.random() * 300, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.09);
 
-    gain.gain.setValueAtTime(0.06, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start();
-    osc.stop(ctx.currentTime + 0.06);
+    osc.stop(ctx.currentTime + 0.09);
   }
 
-  // Rubber duck collectible squeak!
+  // Cute rubber duck quack
   public duck() {
     const ctx = this.getContext();
     if (!ctx) return;
 
-    const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.type = "triangle";
-    osc.frequency.setValueAtTime(587.33, now); // D5
-    osc.frequency.linearRampToValueAtTime(880, now + 0.08); // A5
-    osc.frequency.linearRampToValueAtTime(1046.5, now + 0.16); // C6
+    osc.frequency.setValueAtTime(380, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(560, ctx.currentTime + 0.08);
+    osc.frequency.linearRampToValueAtTime(400, ctx.currentTime + 0.18);
 
-    gain.gain.setValueAtTime(0.18, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start();
-    osc.stop(now + 0.2);
+    osc.stop(ctx.currentTime + 0.2);
   }
 
-  // Bath tub filled celebration fanfare
+  // Level victory jingle (joyful celestial arpeggio)
   public victory() {
     const ctx = this.getContext();
     if (!ctx) return;
 
-    const now = ctx.currentTime;
-    const notes = [523.25, 659.25, 783.99, 1046.5, 1318.51]; // C, E, G, C, E
-
+    const notes = [440, 554.37, 659.25, 880, 1108.73]; // A4, C#5, E5, A5, C#6
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
 
-      gain.gain.setValueAtTime(0.2, now + idx * 0.09);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.35);
+      gain.gain.setValueAtTime(0, ctx.currentTime + idx * 0.08);
+      gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + idx * 0.08 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.4);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      osc.start(now + idx * 0.09);
-      osc.stop(now + idx * 0.09 + 0.35);
+      osc.start(ctx.currentTime + idx * 0.08);
+      osc.stop(ctx.currentTime + idx * 0.08 + 0.45);
     });
   }
 
-  // Button click
+  // Simple UI button pop
   public pop() {
     const ctx = this.getContext();
     if (!ctx) return;
@@ -136,17 +135,17 @@ class BathSoundFX {
     const gain = ctx.createGain();
 
     osc.type = "sine";
-    osc.frequency.setValueAtTime(440, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.06);
+    osc.frequency.setValueAtTime(480, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(750, ctx.currentTime + 0.04);
 
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start();
-    osc.stop(ctx.currentTime + 0.06);
+    osc.stop(ctx.currentTime + 0.04);
   }
 }
 
