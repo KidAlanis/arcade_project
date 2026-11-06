@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent, type PointerEvent } from "react";
 import type { Gender } from "@/lib/dreamio";
 import { useTicketWallet } from "./ticket-wallet";
+import { useDreamerProfile } from "./dreamer-profile";
 import styles from "./dreamer-setup.module.css";
 
 const genderOptions: { value: Gender; label: string; symbol: string }[] = [
@@ -17,6 +18,7 @@ const timeLabel = (value: number) => value < 30 ? "Daylight" : value < 72 ? "Gol
 
 export function DreamerSetup() {
   const wallet = useTicketWallet();
+  const profile = useDreamerProfile();
   const router = useRouter();
   const [name, setName] = useState("");
   const [gender, setGender] = useState<Gender>("unspecified");
@@ -48,15 +50,15 @@ export function DreamerSetup() {
     });
   }
   useEffect(() => {
-    if (wallet.ready && !initialized.current) {
+    if (profile.ready && !initialized.current) {
       initialized.current = true;
-      setName(wallet.nickname);
-      setGender(wallet.gender);
-      desired.current = wallet.daylight;
-      setTime(wallet.daylight);
+      setName(profile.nickname || wallet.nickname);
+      setGender(profile.gender);
+      desired.current = profile.daylight;
+      setTime(profile.daylight);
       seek();
     }
-  }, [wallet.ready, wallet.nickname, wallet.gender, wallet.daylight]);
+  }, [profile.ready, profile.nickname, profile.gender, profile.daylight, wallet.nickname]);
   useEffect(() => () => {
     if (frame.current !== null) cancelAnimationFrame(frame.current);
   }, []);
@@ -79,7 +81,7 @@ export function DreamerSetup() {
   }
   function enter(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (wallet.updateProfile(name, gender, time)) router.push("/intro");
+    if (profile.updateProfile(name, gender, time)) router.push("/intro");
   }
 
   return (
@@ -149,8 +151,8 @@ export function DreamerSetup() {
             </div>
           </fieldset>
           <p className={styles.choiceNote}>Your world, your choice. You can change this later.</p>
-          <button className={styles.enter} type="submit" disabled={!wallet.ready || !name.trim()}>LET’S BEGIN <span>→</span></button>
-          <p className={styles.localNote}>{wallet.storageAvailable ? "Saved in this browser · No password needed" : "Storage is unavailable. Your profile may not be saved."}</p>
+          <button className={styles.enter} type="submit" disabled={!profile.ready || !name.trim()}>LET’S BEGIN <span>→</span></button>
+          <p className={styles.localNote}>{profile.storageAvailable ? "Dreamer preferences saved in this browser · Games and tickets use your account" : "Storage is unavailable. Your preferences may not be saved."}</p>
         </form>
       </section>
 

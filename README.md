@@ -1,60 +1,68 @@
+> **Current status (2026-11-06):** migrations 004–006 are applied and connected player-flow tests passed. Earlier pending/blocker notes below are historical. See [verified results](docs/PLAYER_FLOW_VERIFIED.md). Game win validation remains a known limitation.
+
 # Dreamio
 
-A cozy pixel browser arcade built with Next.js App Router. The site is in English and starts on a borderless, full-screen pixel-art title screen.
-
-## Run locally
+A collaborative pixel-art Next.js arcade with a cinematic castle journey, two-character fitting room, shared game registry, Better Auth accounts, one Postgres ticket wallet per player, and a clothing shop/prize shelf. Main's Pixel Bath, Clawpop and connected player features are preserved.
 
 ```sh
 npm install
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). Validate with `npm test`, `npm run typecheck`, and `npm run build`.
+Requires Node.js 22.15 or newer. Open http://localhost:3000. Run `npm test`, `npm run typecheck`, and `npm run build` for local checks.
 
-## Pages
+## Castle journey and fitting room
 
-- `/` — title screen; Press Start opens the dreamer setup page.
-- `/welcome` — user-supplied day-to-night castle video, controlled by dragging horizontally across the sky or using the keyboard-accessible range slider. Video stays paused and never loops. Username, optional gender and selected time are saved with the local profile before continuing to the castle introduction. Guest access remains available.
-- `/intro` — three HD castle shots, manually advanced by a scene click or Space. The first frame starts paused. Start a shot with one action; while it plays, another action fast-forwards to the next shot (or the final map). Natural endings hold until the next action. Nothing automatically advances between shots. Playback is 1.2×. The third shot finishes on the castle interior; all introduction overlays fade out over 1.8 seconds, leaving the world map.
+- `/` — borderless Dreamio title screen. PRESS START opens `/welcome`; direct wardrobe and account links remain available.
+- `/welcome` — a paused day/night castle video scrubbed through a visible slider or a horizontal sky drag. Name, optional gender and time of day are cosmetic browser preferences; saving them opens `/intro` and does not create an account or change tickets.
+- `/intro` — three 2672×1792 HD castle shots at 1.2× speed. Click the scene or press Space to start/advance; another action while playing skips ahead. Natural shot endings hold until the next action. The last shot stays on its final interior frame while overlays fade out over 1.8 seconds.
+- The final scene's right-hand curtain-and-clothes room keeps its original side perspective. Hover/focus adds a subtle gold halo and enlargement; click/Enter opens the protected `/wardrobe` route. See [map assets](public/art/map/README.md) and [video source matching](public/video/README.md).
+- `/wardrobe` — full-screen blue pixel interface, left category rail, night-street stage and right portrait/style/item panels. SWITCH CHARACTER changes between **Midnight Wings** and **Leather & Lace**, keeping each outfit.
+- Midnight Wings has dress colors and optional wings, tights, cat ears and cuffs. Leather & Lace has optional jacket, bag, headband and earrings, three lace dress colors and matching black boots. Both use coherent full-body sprites with no independently stretched legs.
 
-All three intro clips use the supplied 2672×1792 HD versions (7183, 8472, 2597). Source matching and duplicate handling are recorded in [the video source guide](public/video/README.md).
+The shared wallet from main remains server-authoritative. Onboarding preferences use `dreamio-setup-profile-v1`; only cosmetic fields are migrated from the legacy browser profile, never balances, ownership or account identity. The two photo-character outfits remain local styling previews under `dreamio-photo-character-v1` and `dreamio-street-character-v1`, separate from main's server-saved shop avatar. Arbitrary purchased items are not automatically fitted to these detailed characters.
 
-After the introduction fades, the right-hand curtain-and-dresses room is selectable. The room overlay clips the actual decoded last video frame, retaining its original side perspective; hover or keyboard focus adds a soft gold halo, a subtle 1.015× enlargement and the small pixel-font Fitting Room label. No generated front-view room is used. Click or press Enter to open `/wardrobe`. The left library is not linked. The matching standalone source-pixel cutout is `public/art/map/fitting-room-original.svg`; narrow screens use this at the lower right. See [the map asset guide](public/art/map/README.md).
-- `/lobby` — searchable game catalog, categories, daily check-in, and links to the closet and shop.
-- `/games/game-1` — Cloud Memory, a 6-pair matching demo.
-- `/games/game-2` — Star Collector, a 15-second collection demo.
-- `/games/game-3` — Heartbeat Club, a reaction-time demo.
-- `/wardrobe` — full-screen blue handheld-game dressing room with a compact left category rail, central night street and right portrait/style/outfit panels. SWITCH CHARACTER changes between Midnight Wings and Leather & Lace while retaining each outfit. Midnight Wings has dress colors and independent wings, fishnets, cat ears and cuffs; Leather & Lace has a removable jacket, bag, headband and earrings, three lace dress colors and matching knee-high boots. Both use coherent full-body sprites. Photo Studio previews new files locally.
-- `/shop` — clothing and accessories purchased with earned Dream Points.
+Photo Studio is a local in-memory file preview. It does not upload images or automatically generate a character. Original personal photographs are not included in the site. Generated sprites, prompts, registered item exports and screenshots are included; see [Midnight Wings](public/art/character/README.md), [Leather & Lace](public/art/character/STREET-CHARACTER.md) and the [transcribed generation brief](docs/avatar-generation-prompt.zh-CN.md). Run `node --import tsx scripts/export-street-character.ts` to recreate the six transparent item cutouts.
 
-## Prototype boundaries
+### Manual checks
 
-Nickname entry is a **local demo profile**, not authenticated sign-in. There are no passwords, accounts, database, server-side sessions, or cross-device synchronization. Nicknames, optional gender, selected daylight, points, inventory, outfits, check-in streaks, and game bests are stored under `dreamio-world-v1` in this browser's localStorage. Gender is a profile preference and does not automatically change the photo character. Signing out clears the nickname but retains this device's progress. Guest play is supported; earning rewards and buying items requires a local nickname.
+1. Open `/` → PRESS START. Drag the sky in both directions and use the slider/keyboard to test day, midpoint and night; the video must stay paused and never loop.
+2. Enter a name, choose an optional gender, and begin. Click/Space through the three shots; verify natural endings hold and the last frame remains after the text fades.
+3. Hover/focus the right-hand fitting-room entrance and open it. Existing authentication requirements still apply; use a configured account to test the protected wardrobe.
+4. Change an outfit, use SWITCH CHARACTER twice, then reload. Confirm both characters keep their own choices. Check the jacket/accessory switches and dress colors without skin/boot tinting or broken leg proportions.
+5. Preview a JPG/PNG/WebP in Photo Studio, then remove/close it. Confirm this does not imply a server upload or generation.
+6. With the configured account, regression-test the existing game lobby, shop, wallet and sign-out. Do not reapply already-applied migrations. Offline checks do not establish database connectivity or validate live purchases.
 
-The supplied castle time-lapse is served locally from `public/video/dreamio-day-night.mp4` (no external player). The visible slider runs from the first frame (day) to the final frame (night); the invisible sky gesture applies relative horizontal movement and supports reverse seeking. Test both endpoints, midpoints, rapid back-and-forth dragging and touch/keyboard controls; save a profile, confirm `/intro` opens, the first frame remains paused, click or press Space to advance each shot, and confirm natural endings hold without advancing. Test clicking/Space during playback to skip directly to the next shot, and clicking/Space after a natural ending to continue from the held frame. The final action leaves the castle interior still. Test pause/resume during playback, then confirm all overlays fade out at the end and the final interior frame remains still. Reopen `/welcome` and confirm the chosen profile values persist and earned points are unchanged.
+## Database and authentication setup
 
-Photo Studio opens from the portrait button or the bottom toolbar in the dressing room. Photo selection only previews the file in memory. It is not uploaded, persisted, or turned into an AI avatar. The page states that generation is not connected yet. Production photo-to-avatar generation needs a server endpoint, image-generation service, and private file storage. Do not place API secrets in client code.
+Read [AUTH_AND_PLAYER_DATA.md](docs/AUTH_AND_PLAYER_DATA.md) for the environment setup, schema inspection, reviewed migration commands, wallet API, and teammate integration instructions.
 
-These points are prototype data and can be edited in browser storage. Production accounts and purchases must validate rewards and transactions on the server.
+Put credentials in ignored `.env.local` using `.env.example` as a reference. Generate BETTER_AUTH_SECRET with `openssl rand -base64 32`. Keep DATABASE_URL server-only. The runtime now supports the Supabase transaction pooler with verified TLS and a default one-connection pool; configure DATABASE_SSL_CA_FILE with the Supabase server root certificate if needed. With no database connection, the home page works and account features show an explicit setup message.
 
-## Reward rules
+**Database setup is applied and verified (2026-10-30).** The authenticated `supabase-arcade` MCP targets project `jiaaqwdujaclbxulndjc`, verified against the local pg connection. Three migrations created the nine private auth/player tables and tightened trigger permissions. No original data was reset or deleted. `npm run db:migrate` remains plan-only; do not reapply existing migrations. Live migration versions and local checksums are recorded in `db/migrations/applied.json`.
 
-- Daily check-in: 20 points, once per device-local calendar day.
-- Every seventh consecutive check-in: an extra 50 points (70 that day).
-- First successful completion of each game each day: 10 points.
-- Replays can improve the personal best without granting the same day's reward again.
-- Clothing is bought once and can be equipped without further cost.
+See [migration verification report](docs/MIGRATION_REVIEW.md) for actual schema/RLS, integration tests, retained test fixtures, and remaining game-validation limitations. All placeholder game rewards remain disabled; the shop currently has no active prizes.
 
-## Working together
+## Shared pieces
 
-`src/lib/games.ts` is the shared game registry. Keep existing slugs stable. The three games are clearly labeled playable demos and can be replaced with the team's own games. A dedicated route such as `src/app/games/game-1/page.tsx` can replace its dynamic-route demo without changing its catalog URL. Add game-specific code in a separate component or directory.
+- `src/lib/games.ts` — shared game registry; keep game slugs stable.
+- `src/app/page.tsx` — public arcade floor and game list.
+- `src/app/games/[slug]/page.tsx` — protected Coming soon game pages; unknown slugs return 404. Dedicated game pages added by teammates must also check the session on the server.
+- `src/lib/auth.ts` and `src/lib/server/db.ts` — server auth and shared `pg.Pool`.
+- `src/app/api/auth/[...all]/route.ts` — Better Auth handler.
+- `src/components/ticket-wallet.tsx` — the shared `useTicketWallet()` hook. Uses authenticated APIs; no client-authoritative balance.
+- `src/lib/server/player-data.ts` — session-checked wallet, reward, and atomic redemption helpers.
+- `src/lib/server/game-rewards.ts` — server reward rules, currently disabled until real game validation exists.
+- `src/components/header.tsx` — player name, live balance, sign in/out.
+- `src/app/shop/page.tsx` and `src/app/shelf/page.tsx` — protected catalog and personal prizes.
+- `src/app/globals.css` — existing dark/neon design and account styles.
 
-`src/components/ticket-wallet.tsx` provides the shared context. Existing game integrations can continue using `useTicketWallet().addTickets()` and `.spendTickets()`. Use `.completeGame(slug, score)` to apply the once-daily demo-game reward and personal-best logic. Register new reward slugs in `src/lib/dreamio.ts` when introducing a new game.
+Client integration uses `earnTickets(serverVerifiedResultId)` and `redeemPrize(prizeId, requestId)`; arbitrary `addTickets(amount)` / `spendTickets(amount)` are no longer available. See the full guide before adding a game's reward endpoint.
 
-`src/lib/dreamio.ts` holds catalog items, default appearance, check-in calculations, purchases, outfit changes, and storage validation. Logic tests are in `src/lib/dreamio.test.ts`. `src/components/pixel-art.tsx` holds code-native icons, shop clothing art, and the original arcade avatar used outside the dressing room. The dressing room uses the detailed raster character and compositor in `src/components/layered-character.tsx` with the registry in `src/lib/character.ts`.
+## Integration with latest main (PR merge)
 
-The sky-city background is generated with the built-in imagegen tool. Its exact prompt and asset details are in [public/art/README.md](public/art/README.md).
+Main now includes Dreamio, Pixel Bath and Clawpop. Their game source is preserved and dedicated game pages require sign-in. The shared wallet is still server-authoritative. A compatibility adapter keeps the new UI compiling but deliberately rejects legacy arbitrary add/spend, daily rewards, score rewards and client-only purchases. Legacy wardrobe equip/appearance currently return defaults/no-op; durable cosmetics and validated game rewards need follow-up integration. The shop route uses the secure Postgres catalog. No legacy localStorage balance is imported. Earlier connected tests predate this merge; the merged tree passes 17 tests and production build but requires browser regression testing of the new Dreamio UI.
 
-The dressing-room redesign adds dress and bag outfit slots while keeping existing saved closets compatible. Equipping a top or bottoms switches back from a dress to separates. The dressing room now uses the generated photo character in place of the block avatar. Its included layers and dress color persist separately from shop inventory under `dreamio-photo-character-v1`; arbitrary shop outfits are not automatically fitted to this character. See [the layer guide](public/art/character/README.md). The user-supplied photo-to-avatar prompt was transcribed into [docs/avatar-generation-prompt.zh-CN.md](docs/avatar-generation-prompt.zh-CN.md); the supplied personal test photo is not part of the site assets.
+## Game ticket update (pending migration 004)
 
-Leather & Lace and the selected character persist under `dreamio-street-character-v1`, preserving the previous character's storage. See [its asset and testing guide](public/art/character/STREET-CHARACTER.md). Run `node --import tsx scripts/export-street-character.ts` to export six registered transparent item cutouts. In `/wardrobe`, test SWITCH CHARACTER in both directions, change each character's outfit, reload, and confirm the selection and both outfits remain saved. Original photos are not included in the website.
+New signup 200 / paid round 1 / win +5. See [game-ticket implementation and setup status](docs/GAME_TICKETS.md). Existing balances remain unchanged; Supabase MCP is required to apply the pending migration. Browser-reported wins remain an anti-cheat limitation. This update supersedes the earlier disabled game integration notes after migration 004 is applied.

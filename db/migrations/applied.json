@@ -1,0 +1,43 @@
+{
+  "projectRef": "jiaaqwdujaclbxulndjc",
+  "appliedVia": "supabase-arcade MCP apply_migration",
+  "verifiedOn": "2026-11-06",
+  "migrations": [
+    {
+      "version": "20261030163804",
+      "name": "arcade_001_better_auth",
+      "file": "001_better_auth.sql",
+      "sha256": "e6cb924b3929ecce04071f7a6e599ae925e5f09651106eeec0c2a0da97858937"
+    },
+    {
+      "version": "20261030163809",
+      "name": "arcade_002_player_data",
+      "file": "002_player_data.sql",
+      "sha256": "0c2012845559fd7211d2e538d702267d3c065ef69ff25b3a62c8f6613975b48a"
+    },
+    {
+      "version": "20261030164026",
+      "name": "arcade_003_private_trigger_permissions",
+      "file": "003_private_trigger_permissions.sql",
+      "sha256": "72753603b2f01ab530b8456947838b823615ae1091893db007934a484a84e740"
+    },
+    {
+      "version": "20261106130548",
+      "name": "arcade_004_game_tickets",
+      "file": "004_game_tickets.sql",
+      "sha256": "4ce970099ee20a796d6f92e5cb7199d02cccf765943c96a257ce0f89627f532a"
+    },
+    {
+      "version": "20261106130551",
+      "name": "arcade_005_ticket_claims",
+      "file": "005_ticket_claims.sql",
+      "sha256": "684a4323e5f9ec5030a4f200975897ec389ed3a4a84372a0d0fd5599dc319035"
+    },
+    {
+      "version": "20261106130554",
+      "name": "arcade_006_clothing_and_avatars",
+      "file": "006_clothing_and_avatars.sql",
+      "sha256": "78aef8f8af055173e9a3634109c90417badb36cd4691d00ccd4f2aac46ff0459"
+    }
+  ]
+}

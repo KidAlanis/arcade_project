@@ -6,6 +6,7 @@ import { type Category } from "@/lib/dreamio";
 import { dressColors, type CharacterLayer } from "@/lib/character";
 import { streetColors, streetParts, type StreetPart } from "@/lib/street-character";
 import { StreetCharacter, StreetItemArt, useStreetCharacter } from "./street-character";
+import { useDreamerProfile } from "./dreamer-profile";
 import { useTicketWallet } from "./ticket-wallet";
 import { PixelIcon } from "./pixel-art";
 import {
@@ -47,6 +48,7 @@ function Hearts({ count, large = false }: { count: number; large?: boolean }) {
 
 export function Wardrobe() {
   const { nickname, tickets } = useTicketWallet();
+  const profile = useDreamerProfile();
   const { look, ready, storageAvailable, update, reset } = useCharacterLook();
   const street = useStreetCharacter();
   const isStreet = street.character === "street";
@@ -342,7 +344,7 @@ export function Wardrobe() {
           >
             <div className={styles.street} aria-hidden="true" />
             <div className={styles.sceneGrain} aria-hidden="true" />
-            <span className={styles.playerName}>{nickname || "DREAMER"}</span>
+            <span className={styles.playerName}>{profile.nickname || nickname || "DREAMER"}</span>
             <span className={styles.streetSign} aria-hidden="true">
               DREAMIO <b>21:05</b>
             </span>

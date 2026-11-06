@@ -26,7 +26,7 @@ export function GameCards() {
               onClick={() => setFilter(tab)}
             >
               {tab}
-              {tab === "All games" && <small>03</small>}
+              {tab === "All games" && <small>{games.length.toString().padStart(2, "0")}</small>}
             </button>
           ))}
         </div>
@@ -44,7 +44,7 @@ export function GameCards() {
         {filtered.map((game) => (
           <Link
             className={`game-card ${game.color}`}
-            href={`/games/${game.slug}`}
+            href={game.slug === "clawpop" ? "/clawpop" : `/games/${game.slug}`}
             key={game.slug}
           >
             <div className={`game-cover cover-${game.engine}`}>
@@ -52,7 +52,7 @@ export function GameCards() {
               <span className="game-category">
                 {game.category} / {game.number}
               </span>
-              <span className="game-bonus">+10 pts</span>
+              <span className="game-bonus">{game.slug === "clawpop" ? "+15 pts" : "+10 pts"}</span>
               {game.engine === "memory" ? (
                 <div className="memory-cover">
                   <span>
@@ -72,6 +72,16 @@ export function GameCards() {
                   <PixelIcon name="star" size={64} />
                   <span>✦</span>
                   <Cloud />
+                </div>
+              ) : game.engine === "clawpop" ? (
+                <div className="clawpop-cover">
+                  <div className="cover-claw-arm">
+                    <span className="claw-arm-icon">🦀</span>
+                  </div>
+                  <div className="cover-plush-preview">
+                    <span className="cover-plush-icon">🧸</span>
+                    <span className="cover-sparkle">✦</span>
+                  </div>
                 </div>
               ) : (
                 <div className="reaction-cover">
