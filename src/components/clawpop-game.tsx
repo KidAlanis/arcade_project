@@ -790,6 +790,7 @@ export function ClawpopGame() {
               >
                 KEEP IN BASKET! ♡
               </button>
+              <Link href="/lobby" className="game-back-link" aria-disabled={ticketRound.busy} onClick={event=>{if(ticketRound.busy)event.preventDefault();}}>← Back to lobby</Link>
             </div>
           </div>
         )}
@@ -811,6 +812,7 @@ export function ClawpopGame() {
               >
                 TRY AGAIN! ✦
               </button>
+              <Link href="/lobby" className="game-back-link" aria-disabled={ticketRound.busy} onClick={event=>{if(ticketRound.busy)event.preventDefault();}}>← Back to lobby</Link>
             </div>
           </div>
         )}
