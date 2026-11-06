@@ -1031,6 +1031,9 @@
 
               if (this.waterCollected >= this.tub.target && !this.isCompleted && !this.isDirty) {
                 this.isCompleted = true;
+                if (window.parent !== window && new URLSearchParams(window.location.search).get("arcade") === "1") {
+                  window.parent.postMessage({ type: "dreamio:cloud-bath-complete" }, window.location.origin);
+                }
                 audio.victory();
                 this.updateGirl(100, true);
                 this.updateBathStatus();
