@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Dreamio · Pixel Cloud Bath</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0e0b20;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    #game-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+    }
+    #game-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      display: block;
+    }
+    /* Girl container overlay */
+    #girl-container {
+      position: absolute;
+      pointer-events: none;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    #girl-container canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+    .girl-mood { position:absolute; inset:0; pointer-events:none; }
+    .anger-mark { position:absolute; left:23%; top:41%; width:24px; height:24px; animation: angry-bob .65s steps(2,end) infinite; filter:drop-shadow(2px 2px 0 #fff4ef); }
+    .mood-star { position:absolute; width:4px; height:14px; background:#fff3a3; box-shadow:0 0 8px #ffc7dc; animation: happy-twinkle 1.3s steps(3,end) infinite; }
+    .mood-star::after { content:''; position:absolute; width:14px; height:4px; left:-5px; top:5px; background:#fff8c5; }
+    @keyframes angry-bob { 0%,100% { transform:translateY(0) rotate(-6deg); } 50% { transform:translateY(-3px) rotate(6deg); } }
+    @keyframes happy-twinkle { 0%,100% { opacity:.25; transform:translateY(2px) scale(.6); } 50% { opacity:1; transform:translateY(-5px) scale(1); } }
+    @media (prefers-reduced-motion: reduce) { .anger-mark,.mood-star { animation:none; } }
+    .bath-bubble { position:absolute; left:var(--x); top:var(--y); width:var(--size); height:var(--size); border:2px solid #fffaff; border-radius:35%; background:#d3f5ff55; box-shadow:inset 2px 2px #fff9,2px 2px #ddbbe755; animation:bubble-rise 3.5s linear infinite; animation-delay:var(--delay); opacity:0; }
+    @keyframes bubble-rise { 0% { opacity:0; transform:translate(0,8px) scale(.6); } 20% { opacity:.9; } 80% { opacity:.7; } 100% { opacity:0; transform:translate(12px,-90px) scale(1.15); } }
+    #bath-status { position:absolute; z-index:31; left:50%; top:76px; transform:translateX(-50%); display:none; align-items:center; gap:12px; max-width:94%; padding:8px 14px; background:#fff2f8ed; border:1px solid #d8a5c6; border-radius:16px; color:#8e577c; font-size:12px; box-shadow:0 5px 20px #a96b9433; }
+    #bath-status button { background:#f4c4dc; border:1px solid #d09abf; border-radius:12px; padding:7px 12px; color:#82516e; cursor:pointer; white-space:nowrap; font-weight:bold; }
+    @media(max-width:650px) { #bath-status { top:112px; font-size:10px; padding:6px 9px; gap:6px; } }
+    @media(prefers-reduced-motion:reduce) { .bath-bubble { animation:none; opacity:.65; } }
+    /* Floating HUD */
+    .hud-bar {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+      z-index: 30;
+    }
+    .hud-pill {
+      background: rgba(23, 16, 50, 0.88);
+      border: 1px solid rgba(165, 142, 225, 0.45);
+      border-radius: 9999px;
+      padding: 6px 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      pointer-events: auto;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .level-btn {
+      background: rgba(40, 27, 80, 0.8);
+      border: 1px solid rgba(165, 142, 225, 0.3);
+      color: #ddd6fe;
+      border-radius: 9999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .level-btn:hover {
+      background: #382670;
+      color: #fff;
+    }
+    .level-btn.active {
+      background: linear-gradient(to right, #fbbf24, #f59e0b);
+      color: #1c1917;
+      border-color: #fde047;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+      transform: scale(1.05);
+    }
+    .restart-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(30, 19, 61, 0.9);
+      border: 2px solid #fbbf24;
+      color: #fde047;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+      transition: transform 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+    .restart-btn:active {
+      transform: scale(0.9);
+    }
+    /* Bottom Hint Bar */
+    .bottom-hint {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(24, 17, 54, 0.85);
+      border: 1px solid rgba(165, 142, 225, 0.35);
+      border-radius: 9999px;
+      padding: 6px 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #e0e7ff;
+      pointer-events: none;
+      z-index: 30;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+      white-space: nowrap;
+    }
+    /* Victory Modal */
+    #victory-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(6px);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-card {
+      background: linear-gradient(to bottom, #24184a, #1f1442, #160c33);
+      border: 3px solid rgba(251, 191, 36, 0.85);
+      border-radius: 24px;
+      padding: 28px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 0 50px rgba(251, 191, 36, 0.45);
+      color: #fff;
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(to right, #fbbf24, #f59e0b, #ea580c);
+      color: #1c1917;
+      font-size: 14px;
+      font-weight: 900;
+      border: 2px solid #fde047;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 0 16px rgba(251, 191, 36, 0.5);
+      transition: transform 0.15s;
+    }
+    .modal-btn:hover {
+      transform: scale(1.02);
+    }
+    .modal-btn:active {
+      transform: scale(0.96);
+    }
+    .hud-pill { background:rgba(255,237,246,.94); border-color:#d7a4c3; color:#825779; box-shadow:0 5px 18px #b4789d30; }
+    .hud-pill span, #level-name { color:#9b618a !important; }
+    .level-btn { background:#f9dbea; color:#926084; border-color:#deb2ce; }
+    .level-btn:hover { background:#f6c1dc; color:#754467; }
+    .level-btn.active { background:linear-gradient(#fff5d3,#f9d6a9); color:#966b64; border-color:#fff8da; box-shadow:0 0 10px #ffcfce; }
+    .restart-btn { background:#f8d6e9; border-color:#fff0bd; color:#9c6a8a; box-shadow:0 0 10px #e5b7d6; }
+    .bottom-hint { background:rgba(255,235,245,.95); border-color:#deb2ce; color:#916480; }
+    .modal-card { background:linear-gradient(#fff1f7,#f1daec); border-color:#f4c6d9; color:#885d80; box-shadow:0 0 50px #ffcadc80; }
+    .modal-btn { background:linear-gradient(#ffe8b7,#f6bbd0); color:#885470; border-color:#fff4d4; }
+    #stay-btn { color:#956b87 !important; }
+    @media (max-width:650px) { .hud-bar { top:8px; left:8px; right:8px; flex-wrap:wrap; gap:7px; } .hud-pill { padding:5px 8px; gap:5px; font-size:10px; } #duck-icons { font-size:16px !important; } .bottom-hint { max-width:96%; font-size:9px; padding:6px 8px; white-space:normal; text-align:center; } }
+    .episode-info { position:absolute; left:50%; top:63px; transform:translateX(-50%); max-width:94%; color:#8c6486; background:#fff4f9dc; border:1px solid #eac5dc; border-radius:10px; padding:5px 12px; font-size:10px; z-index:29; text-align:center; pointer-events:none; }
+    #bath-status { top:105px; }
+    #level-buttons { gap:3px; flex-wrap:wrap; }
+    .hud-bar > div:first-child { flex-wrap:wrap; max-width:100%; }
+    [data-theme="agent"] .hud-pill { background:#e3f5f0ed; color:#477e76; border-color:#86b4ae; }
+    [data-theme="luxury"] .hud-pill { background:#fff2dced; color:#967149; border-color:#d5b782; }
+    [data-theme="christmas"] .hud-pill { background:#f6fff2ed; color:#477767; border-color:#a2c6ac; }
+    [data-theme="halloween"] .hud-pill { background:#f4def4ed; color:#86588c; border-color:#bb8fc4; }
+    [data-theme="space"] .hud-pill { background:#eae2ffed; color:#7561a5; border-color:#aaa2d3; }
+    @media(max-width:900px) { .hud-bar { flex-wrap:wrap; gap:7px; } .episode-info { top:112px; } #bath-status { top:151px; } .level-btn { padding:4px 8px; } }
+    @media(max-width:450px) { .episode-info { top:151px; width:94%; font-size:9px; } #bath-status { top:204px; } .hud-bar > div:first-child { gap:5px !important; } .hud-bar #level-buttons { width:100%; justify-content:center; } .level-btn { padding:4px 7px; } }
+    .score-hud { position:absolute; left:16px; bottom:48px; z-index:32; font-size:11px; }
+    #score-floats { position:absolute; inset:0; pointer-events:none; z-index:34; }
+    .score-pop { position:absolute; color:#b56b98; background:#fff5dfee; padding:4px 8px; border:1px solid #f3c4d9; border-radius:8px; font-weight:900; font-size:12px; animation:score-rise 1.6s ease-out forwards; }
+    @keyframes score-rise { from { opacity:1; transform:translate(-50%,0); } to { opacity:0; transform:translate(-50%,-55px); } }
+    #relay-controls { position:absolute; inset:0; pointer-events:none; z-index:28; }
+    .relay-valve { position:absolute; transform:translate(-50%,-50%); pointer-events:auto; padding:4px 7px; font-size:10px; font-weight:800; border:1px solid #a59abe; border-radius:8px; background:#fff2e7f2; color:#87658f; cursor:pointer; }
+    .relay-valve[aria-pressed="true"] { background:#dff4e8; color:#5a8279; }
+    @media(max-width:450px) { .score-hud { left:8px; bottom:52px; padding:4px 7px; font-size:9px; } .relay-valve { font-size:9px; padding:3px 5px; } }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <!-- Fullscreen Interactive Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- The 1:1 Exact Pixel Girl sitting on top of the clouds in her tub -->
+    <div id="girl-container"></div>
+
+    <!-- Floating HUD -->
+    <div class="hud-bar">
+      <!-- Left: Title & Level Selector -->
+      <div style="display: flex; align-items: center; gap: 8px; pointer-events: auto;">
+        <div class="hud-pill" style="color: #fde047;">
+          <span>🌙</span>
+          <span id="level-name">Rose Palace · Cloud Castle</span>
+        </div>
+        <div class="hud-pill" id="level-buttons" style="padding: 4px 8px;">
+          <!-- Generated via JS -->
+        </div>
+      </div>
+
+      <!-- Center: 3 Star Ducks -->
+      <div class="hud-pill" id="duck-icons" style="font-size: 22px; gap: 6px;">
+        <span class="duck-star" style="opacity: 0.25;">🐥</span>
+        <span class="duck-star" style="opacity: 0.25;">🐥</span>
+        <span class="duck-star" style="opacity: 0.25;">🐥</span>
+      </div>
+
+      <!-- Right: Water Meter & Reset -->
+      <div style="display: flex; align-items: center; gap: 10px; pointer-events: auto;">
+        <div class="hud-pill">
+          <span style="color: #67e8f9;">Bath water:</span>
+          <div style="width: 90px; height: 16px; background: #f5d5e7; border: 1px solid rgba(103, 232, 249, 0.6); border-radius: 9999px; overflow: hidden; padding: 2px;">
+            <div id="water-bar" style="width: 0%; height: 100%; background: linear-gradient(to right, #f3a8ce, #c8a4df); border-radius: 9999px; transition: width 0.15s; box-shadow: 0 0 8px #38bdf8;"></div>
+          </div>
+          <span id="water-pct" style="color: #a5f3fc; font-weight: 900;">0%</span>
+        </div>
+        <button class="restart-btn" id="restart-btn" title="Restart level">↺</button>
+      </div>
+    </div>
+
+    <div class="score-hud hud-pill"><span id="score-value">Score 0</span><span id="water-quality">Fresh water</span></div>
+    <div id="score-floats" aria-live="polite"></div>
+    <div id="relay-controls" aria-label="Relay pool valves"></div>
+    <div id="episode-info" class="episode-info"></div>
+    <!-- Bottom Hint -->
+    <div class="bottom-hint">
+      Drag to dig · Tap relay valves · Collect gems & ducks · Avoid pollution
+    </div>
+
+    <div id="bath-status" role="status" aria-live="polite"><span id="bath-status-text"></span><button id="bath-action"></button></div>
+    <!-- Victory Modal -->
+    <div id="victory-modal">
+      <div class="modal-card">
+        <div style="font-size: 44px; margin-bottom: 8px;">✨ 🫧 ✨</div>
+        <h3 style="font-size: 22px; font-weight: 900; color: #fde047; margin-bottom: 6px;">Bubble bath time!</h3>
+        <p style="font-size: 12px; color: #ddd6fe; margin-bottom: 16px;">
+          Fresh spring water has reached the bath. Relax and enjoy the bubbles!
+        </p>
+        <div id="modal-ducks" style="font-size: 34px; margin-bottom: 16px; background: rgba(17, 11, 40, 0.85); padding: 10px; border-radius: 16px; border: 1px solid rgba(165, 142, 225, 0.4);">
+          🐥 🐥 🐥
+        </div>
+        <div style="background: rgba(45, 27, 84, 0.8); border: 1px solid rgba(165, 142, 225, 0.3); border-radius: 12px; padding: 10px; font-size: 12px; color: #fde047; font-weight: 800; margin-bottom: 18px;">
+          🎟️ Arcade tickets: +<span id="reward-tickets">11</span> tickets!
+        </div>
+        <button class="modal-btn" id="next-level-btn">Next cloudscape →</button>
+        <button id="stay-btn" style="background: none; border: none; color: #c4b5fd; font-size: 12px; font-weight: 700; margin-top: 12px; cursor: pointer;">Stay and enjoy the view</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+     * 1. 1:1 EXACT PIXEL GIRL SVG PATHS (Pixel-for-pixel reconstruction)
+     * ========================================================================= */
+    const PIXEL_GIRL_PATHS = {
+      K: { color: "#110e10", d: "M13 0h8v1h-8zM10 1h3v1h-3zM21 1h2v1h-2zM8 2h2v1h-2zM23 2h2v1h-2zM7 3h1v1h-1zM25 3h1v1h-1zM6 4h1v1h-1zM26 4h1v1h-1zM5 5h1v1h-1zM27 5h1v1h-1zM4 6h1v1h-1zM28 6h1v1h-1zM3 7h1v1h-1zM29 7h1v1h-1zM3 8h1v1h-1zM29 8h1v1h-1zM3 9h1v1h-1zM14 9h1v1h-1zM29 9h1v1h-1zM2 10h1v1h-1zM13 10h1v1h-1zM30 10h1v1h-1zM2 11h1v1h-1zM12 11h1v1h-1zM16 11h1v1h-1zM30 11h1v1h-1zM2 12h1v1h-1zM12 12h1v1h-1zM16 12h1v1h-1zM30 12h1v1h-1zM2 13h1v1h-1zM11 13h1v1h-1zM15 13h1v1h-1zM19 13h1v1h-1zM30 13h1v1h-1zM2 14h1v1h-1zM11 14h1v1h-1zM14 14h1v1h-1zM20 14h1v1h-1zM30 14h1v1h-1zM2 15h1v1h-1zM10 15h1v1h-1zM12 15h2v1h-2zM15 15h7v1h-7zM30 15h1v1h-1zM3 16h1v1h-1zM9 16h1v1h-1zM22 16h2v1h-2zM30 16h1v1h-1zM0 17h1v1h-1zM3 17h1v1h-1zM9 17h1v1h-1zM24 17h1v1h-1zM29 17h1v1h-1zM1 18h1v1h-1zM3 18h1v1h-1zM5 18h2v1h-2zM8 18h1v1h-1zM24 18h1v1h-1zM29 18h1v1h-1zM2 19h1v1h-1zM4 19h1v1h-1zM8 19h1v1h-1zM25 19h1v1h-1zM27 19h2v1h-2zM2 20h1v1h-1zM4 20h1v1h-1zM8 20h1v1h-1zM25 20h1v1h-1zM29 20h1v1h-1zM1 21h1v1h-1zM5 21h2v1h-2zM8 21h1v1h-1zM25 21h1v1h-1zM29 21h1v1h-1zM1 22h1v1h-1zM8 22h1v1h-1zM25 22h1v1h-1zM27 22h2v1h-2zM1 23h1v1h-1zM9 23h1v1h-1zM25 23h2v1h-2zM2 24h1v1h-1zM9 24h1v1h-1zM25 24h1v1h-1zM3 25h1v1h-1zM7 25h2v1h-2zM24 25h1v1h-1zM23 26h1v1h-1z" },
+      H: { color: "#362a29", d: "M13 1h8v1h-8zM10 2h13v1h-13zM8 3h17v1h-17zM7 4h19v1h-19zM6 5h21v1h-21zM5 6h23v1h-23zM4 7h3v1h-3zM8 7h12v1h-12zM22 7h7v1h-7zM4 8h3v1h-3zM10 8h10v1h-10zM23 8h1v1h-1zM26 8h3v1h-3zM4 9h4v1h-4zM11 9h3v1h-3zM15 9h5v1h-5zM23 9h1v1h-1zM26 9h3v1h-3zM3 10h10v1h-10zM14 10h16v1h-16zM3 11h9v1h-9zM13 11h3v1h-3zM17 11h13v1h-13zM3 12h9v1h-9zM13 12h3v1h-3zM17 12h13v1h-13zM3 13h8v1h-8zM12 13h3v1h-3zM16 13h3v1h-3zM20 13h6v1h-6zM27 13h3v1h-3zM3 14h8v1h-8zM12 14h2v1h-2zM15 14h5v1h-5zM21 14h4v1h-4zM26 14h4v1h-4zM3 15h7v1h-7zM22 15h2v1h-2zM25 15h5v1h-5zM4 16h5v1h-5zM24 16h6v1h-6zM4 17h5v1h-5zM25 17h4v1h-4zM4 18h1v1h-1zM7 18h1v1h-1zM25 18h4v1h-4zM3 19h1v1h-1zM7 19h1v1h-1zM26 19h1v1h-1zM3 20h1v1h-1zM7 20h1v1h-1zM26 20h1v1h-1zM2 21h3v1h-3zM7 21h1v1h-1zM26 21h1v1h-1zM2 22h6v1h-6zM26 22h1v1h-1zM2 23h7v1h-7zM3 24h6v1h-6zM4 25h3v1h-3z" },
+      W: { color: "#ffffff", d: "M7 7h1v1h-1zM20 7h2v1h-2zM7 8h3v1h-3zM20 8h3v1h-3zM24 8h2v1h-2zM8 9h3v1h-3zM20 9h3v1h-3zM24 9h2v1h-2zM10 24h1v1h-1zM24 24h1v1h-1zM9 25h4v1h-4zM21 25h3v1h-3zM10 26h3v1h-3zM19 26h4v1h-4zM10 27h2v1h-2zM16 27h1v1h-1zM18 27h6v1h-6zM10 28h3v1h-3zM14 28h2v1h-2zM19 28h5v1h-5zM12 29h1v1h-1zM14 29h2v1h-2zM17 29h1v1h-1zM19 29h3v1h-3zM14 30h2v1h-2zM19 30h2v1h-2zM15 31h6v1h-6zM16 33h1v1h-1zM20 33h1v1h-1zM14 34h1v1h-1zM18 34h1v1h-1zM15 36h1v1h-1zM14 37h1v1h-1zM19 37h1v1h-1zM14 39h3v1h-3zM18 39h3v1h-3z" },
+      R: { color: "#cb1639", d: "M26 13h1v1h-1zM25 14h1v1h-1zM24 15h1v1h-1z" },
+      F: { color: "#fff5ee", d: "M11 15h1v1h-1zM14 15h1v1h-1zM10 16h12v1h-12zM10 17h14v1h-14zM9 18h3v1h-3zM14 18h7v1h-7zM23 18h1v1h-1zM5 19h2v1h-2zM9 19h3v1h-3zM14 19h7v1h-7zM23 19h2v1h-2zM5 20h2v1h-2zM9 20h3v1h-3zM14 20h7v1h-7zM23 20h2v1h-2zM27 20h2v1h-2zM9 21h2v1h-2zM14 21h7v1h-7zM24 21h1v1h-1zM27 21h2v1h-2zM9 22h2v1h-2zM14 22h3v1h-3zM18 22h3v1h-3zM24 22h1v1h-1zM11 23h13v1h-13zM13 24h8v1h-8zM14 26h2v1h-2zM17 26h1v1h-1zM12 27h1v1h-1zM14 27h2v1h-2zM11 30h2v1h-2zM21 30h2v1h-2zM10 31h3v1h-3zM21 31h3v1h-3zM10 32h2v1h-2zM22 32h3v1h-3z" },
+      S: { color: "#b3a398", d: "M10 23h1v1h-1zM24 23h1v1h-1zM11 24h2v1h-2zM21 24h3v1h-3zM13 25h8v1h-8z" },
+      P: { color: "#fca7b5", d: "M11 21h3v1h-3zM21 21h3v1h-3zM11 22h3v1h-3zM21 22h3v1h-3z" },
+      M: { color: "#ce9ba5", d: "M17 22h1v1h-1z" },
+      E: { color: "#604743", d: "M12 18h2v1h-2zM21 18h2v1h-2zM12 19h2v1h-2zM21 19h2v1h-2zM12 20h2v1h-2zM21 20h2v1h-2z" },
+      N: { color: "#848287", d: "M16 26h1v1h-1zM18 26h1v1h-1zM17 27h1v1h-1zM16 28h3v1h-3zM16 29h1v1h-1zM18 29h1v1h-1zM16 30h3v1h-3z" },
+      A: { color: "#b7b7b8", d: "M11 29h1v1h-1zM22 29h1v1h-1zM10 30h1v1h-1zM23 30h1v1h-1zM9 31h1v1h-1zM24 31h1v1h-1zM9 32h1v1h-1zM21 32h1v1h-1zM25 32h1v1h-1zM10 33h2v1h-2zM22 33h2v1h-2z" },
+      B: { color: "#4d3d26", d: "M13 26h1v1h-1zM13 27h1v1h-1zM13 28h1v1h-1zM13 29h1v1h-1zM13 30h1v1h-1zM13 31h2v1h-2zM12 32h3v1h-3zM12 33h2v1h-2z" },
+      U: { color: "#17447e", d: "M15 32h6v1h-6zM14 33h2v1h-2zM17 33h3v1h-3zM15 34h2v1h-2zM19 34h3v1h-3zM14 35h3v1h-3zM18 35h4v1h-4zM14 36h1v1h-1zM16 36h1v1h-1zM18 36h4v1h-4zM15 37h2v1h-2zM18 37h1v1h-1zM20 37h2v1h-2z" },
+      D: { color: "#053a76", d: "M21 33h1v1h-1zM13 34h1v1h-1zM17 34h1v1h-1zM22 34h1v1h-1zM13 35h1v1h-1zM17 35h1v1h-1zM22 35h1v1h-1zM13 36h1v1h-1zM17 36h1v1h-1zM22 36h1v1h-1zM13 37h1v1h-1zM17 37h1v1h-1zM22 37h1v1h-1zM13 38h9v1h-9z" }
+    };
+
+    function renderPixelGirlSvg(waterLevel, isBathing, dirty = false, theme = "castle") {
+      let pathsSvg = "";
+      for (const key in PIXEL_GIRL_PATHS) {
+        pathsSvg += `<path d="${PIXEL_GIRL_PATHS[key].d}" fill="${PIXEL_GIRL_PATHS[key].color}" />`;
+      }
+
+      const waterOpacity = 0.40 + waterLevel / 170;
+      return `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 125" role="img" aria-label="A girl reclining in a porcelain cloud bath" style="width:100%;height:100%;image-rendering:pixelated;shape-rendering:crispEdges;overflow:visible">
+          <defs>
+            <pattern id="porcelain" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="#fff4f8"/><rect x="0" y="0" width="3" height="3" fill="#fffdf7"/><rect x="1" y="1" width="1" height="1" fill="#f0dce9"/></pattern>
+            <pattern id="pink-tiles" width="5" height="4" patternUnits="userSpaceOnUse"><rect width="5" height="4" fill="#c4a4c6"/><rect width="4" height="3" fill="#ebcada"/><rect width="2" height="1" fill="#fff0f2"/></pattern>
+            <pattern id="pool-tiles" width="5" height="4" patternUnits="userSpaceOnUse"><rect width="5" height="4" fill="#77bfcd"/><rect width="4" height="3" fill="#a7e8e5"/><rect width="2" height="1" fill="#dcffff"/></pattern>
+          </defs>
+          <!-- Pastel cloud island, with lavender undersides and lit upper lobes. -->
+          <path d="M3 107h5v-7h10v-4h14v3h12v-5h15v4h15v-3h12v7h10v12h-8v6H72v3H25v-4H9v-5H3z" fill="#b5b8dd" stroke="#827e9d" stroke-width="1"/>
+          <path d="M4 104h8v-7h13v4h12v-5h17v4h15v-5h14v7h12v9H84v5H66v3H30v-4H15v-5H4z" fill="#e7ddf1"/>
+          <path d="M8 102h10v-5h9v6h12v-5h13v6h17v-6h12v8h10v4H70v4H38v-4H13z" fill="#fffaf5"/>
+          <!-- White porcelain shell in an isometric silhouette. -->
+          <path d="M9 81L69 66l23 12v18l-14 14-52 6-17-14z" fill="#8c8bb8" stroke="#666384" stroke-width="1.5"/>
+          <path d="M10 82l18 15 51-8 13-11v13l-14 14-50 7-18-13z" fill="url(#pink-tiles)"/>
+          <path d="M12 85l16 14 48-7v8l-48 8-16-11z" fill="url(#porcelain)"/>
+          <path d="M9 81l60-15 23 12-14 17-50 8L9 89z" fill="url(#porcelain)" stroke="#9a7d9c" stroke-width="1.3"/>
+          <path d="M17 82l51-12 16 9-10 11-44 7-13-10z" fill="url(#pool-tiles)"/>
+          <path d="M19 85l48-12 14 7-9 9-41 7z" fill="${dirty ? '#9a985c' : '#71dbe8'}" opacity="${dirty ? .95 : waterOpacity}"/>
+          <!-- Reclining pose: original dark hair, ribbon and face, body under water. -->
+          <path d="M39 86l17-8 13 1 6 4-5 5-21 5z" fill="#ffe9e0"/>
+          <path d="M48 86l10-4 10 2-7 7-14 2z" fill="${dirty ? '#acae78' : '#b8f3ef'}"/>
+          <g transform="translate(17 63) rotate(-54 17 18) scale(.83)">
+            ${Object.entries(PIXEL_GIRL_PATHS).filter(([k]) => !['B','U','D','N','A','E','M','P'].includes(k)).map(([,v]) => `<path d="${v.d}" fill="${v.color}"/>`).join('')}
+            ${isBathing
+              ? '<path d="M11 19h1v-1h2v1h1v1h-1v-1h-2v1h-1zM21 19h1v-1h2v1h1v1h-1v-1h-2v1h-1z" fill="#604743"/><path d="M16 22h4v1h-1v1h-2v-1h-1z" fill="#ce718b"/>'
+              : '<path d="M11 17h2v1h2v2h-2v-1h-2zM25 17h-2v1h-2v2h2v-1h2z" fill="#604743"/><path d="M16 23v-1h1v-1h2v1h1v1h-1v-1h-2v1z" fill="#a96778"/>'}
+            <path d="M10 21h3v1h-3zM23 21h3v1h-3z" fill="#f4a3b8"/>
+            ${theme === 'christmas' ? '<path d="M5 5L20-8 28 4z" fill="#d55d7b"/><path d="M4 4h25v4H4z" fill="#fff7e8"/><rect x="18" y="-9" width="6" height="5" fill="#fff7e8"/>' : ''}
+            ${theme === 'halloween' ? '<path d="M4 4L15-15 25 4z" fill="#725891"/><path d="M1 4h29v4H1z" fill="#9674b0"/><path d="M9-1h13v3H9z" fill="#f1a76a"/>' : ''}
+            ${theme === 'luxury' ? '<path d="M7 2L6-5l6 3 4-6 4 6 6-3-1 7z" fill="#e5ba6a"/><path d="M9 1h14v2H9z" fill="#fff1bf"/><rect x="15" y="-2" width="3" height="3" fill="#e498c3"/>' : ''}
+            ${theme === 'agent' ? '<path d="M10 18h6v3h-6zM20 18h6v3h-6zM15 18h6v1h-6z" fill="#3a525f"/><path d="M11 18h3v1h-3zM21 18h3v1h-3z" fill="#95d7d4"/>' : ''}
+            ${theme === 'space' ? '<path d="M4 8h3v17H4zM28 8h3v17h-3zM7 5h21v3H7z" fill="#e5ddfa"/><path d="M8 8h19v3H8z" fill="#b9cfe9"/>' : ''}
+          </g>
+          <path d="M38 85l10 2 8-2" fill="none" stroke="#ffece1" stroke-width="3"/>
+          <!-- Bubbles conceal the body naturally, and bob with the water. -->
+          <g fill="#f5ffff" stroke="#c6eff4" stroke-width=".6">
+            <circle cx="45" cy="89" r="4"/><circle cx="51" cy="87" r="5"/>
+            <circle cx="58" cy="88" r="3"/><circle cx="68" cy="82" r="4"/>
+            <circle cx="36" cy="93" r="3"/>
+          </g>
+          <path d="M28 100l48-8 12-12" fill="none" stroke="#fff" stroke-width="2"/>
+          <!-- Brass shower and a tiny floating duck. -->
+          <path d="M79 73V51h-3v-5h-7v3h-3" fill="none" stroke="#8c713f" stroke-width="4"/>
+          <path d="M79 72V51h-3v-5h-7v3h-3" fill="none" stroke="#ffe394" stroke-width="2"/>
+          <path d="M62 50h9v3h-9z" fill="#ffd978" stroke="#987845" stroke-width="1"/>
+          <g fill="#b5f3ff" opacity=".8"><rect x="63" y="56" width="1" height="3"/><rect x="67" y="59" width="1" height="3"/></g>
+          <g transform="translate(65 85)"><path d="M0 1h7v-5h5v5h3v4H3z" fill="#ffe27e" stroke="#bb914e" stroke-width=".6"/><path d="M12-2h4v2h-4z" fill="#f3a459"/><rect x="10" y="-3" width="1" height="1" fill="#545068"/></g>
+          <g fill="#fff6b0"><path d="M7 77h2v-4h2v4h2v2h-2v4H9v-4H7z"/><path d="M90 59h2v-3h2v3h2v2h-2v3h-2v-3h-2z"/></g>
+          ${isBathing ? '<g fill="#fff9e1"><circle cx="31" cy="57" r="2"/><circle cx="42" cy="52" r="3"/><path d="M49 59l3-3 3 3-3 4z"/></g>' : ''}
+        </svg>
+      `;
+    }
+
+    /* =========================================================================
+     * 2. AUDIO SYNTHESIZER (Web Audio API)
+     * ========================================================================= */
+    class SoundSynth {
+      constructor() {
+        this.ctx = null;
+        this.lastDig = 0;
+      }
+      getCtx() {
+        if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
+        return this.ctx;
+      }
+      dig() {
+        const now = performance.now();
+        if (now - this.lastDig < 50) return;
+        this.lastDig = now;
+        const ctx = this.getCtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(320 + Math.random() * 80, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.08);
+        filter.type = "bandpass";
+        filter.frequency.setValueAtTime(450, ctx.currentTime);
+        gain.gain.setValueAtTime(0.07, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+      }
+      splash() {
+        const ctx = this.getCtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(700 + Math.random() * 300, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.09);
+      }
+      duck() {
+        const ctx = this.getCtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(380, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(560, ctx.currentTime + 0.08);
+        osc.frequency.linearRampToValueAtTime(400, ctx.currentTime + 0.18);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.2);
+      }
+      victory() {
+        const ctx = this.getCtx();
+        if (!ctx) return;
+        [440, 554.37, 659.25, 880, 1108.73].forEach((f, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(f, ctx.currentTime + i * 0.08);
+          gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.08);
+          gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + i * 0.08 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.4);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.08);
+          osc.stop(ctx.currentTime + i * 0.08 + 0.45);
+        });
+      }
+    }
+    const audio = new SoundSynth();
+
+    /* =========================================================================
+     * 3. CELL CONSTANTS & CLOUD HELPERS
+     * ========================================================================= */
+    const CELL_AIR = 0;
+    const CELL_CLOUD_WHITE = 1;
+    const CELL_ROCK = 2;
+    const CELL_WOOD = 3;
+    const CELL_CLOUD_PINK = 4;
+    const CELL_CLOUD_LAVENDER = 5;
+    const CELL_CLOUD_PEACH = 6;
+
+    function isCloud(c) {
+      return c === 1 || c === 4 || c === 5 || c === 6;
+    }
+
+    /* =========================================================================
+     * 4. LEVEL CONFIGURATION (Full-screen Dynamic Clouds)
+     * ========================================================================= */
+    const LEVELS = [
+      {
+        number: "01",
+        name: "Rose Palace · Cloud Castle",
+        theme: "castle",
+        hazards: [[.37,.43,"poop"],[.65,.63,"trash"],[.30,.73,"trash"]],
+        tubRatio: { x: 0.68, y: 0.78, w: 20, h: 9, targetWater: 28 },
+        spawners: [{ xRatio: 0.48, yRatio: 0.08, count: 200 }],
+        ducks: [{ xRatio: 0.28, yRatio: 0.4 }, { xRatio: 0.64, yRatio: 0.52 }, { xRatio: 0.38, yRatio: 0.65 }]
+      },
+      {
+        number: "02",
+        name: "Peach Woods · Firefly Garden",
+        theme: "forest",
+        hazards: [[.40,.40,"trash"],[.62,.57,"poop"],[.32,.71,"poop"]],
+        tubRatio: { x: 0.4, y: 0.78, w: 20, h: 9, targetWater: 30 },
+        spawners: [{ xRatio: 0.26, yRatio: 0.08, count: 110 }, { xRatio: 0.72, yRatio: 0.08, count: 110 }],
+        ducks: [{ xRatio: 0.24, yRatio: 0.45 }, { xRatio: 0.74, yRatio: 0.45 }, { xRatio: 0.49, yRatio: 0.68 }]
+      },
+      {
+        number: "03",
+        name: "Sunset Suite · City Lights",
+        theme: "city",
+        hazards: [[.42,.43,"poop"],[.59,.61,"trash"],[.76,.73,"trash"]],
+        tubRatio: { x: 0.66, y: 0.78, w: 20, h: 9, targetWater: 32 },
+        spawners: [{ xRatio: 0.3, yRatio: 0.08, count: 220 }],
+        ducks: [{ xRatio: 0.74, yRatio: 0.38 }, { xRatio: 0.26, yRatio: 0.54 }, { xRatio: 0.7, yRatio: 0.7 }]
+      },
+      {
+        number:"04", name:"Rose Agent · Secret Spa Mission", theme:"agent", digRadius:3.4,
+        briefing:"Slip past two security baffles and protect the spring.", difficulty:4,
+        hazards:[[.25,.40,"trash"],[.73,.46,"poop"],[.30,.62,"trash"],[.72,.73,"trash"]],
+        tubRatio:{targetWater:36}, spawners:[{xRatio:.48,yRatio:.08,count:180}],
+        gates:[{y:.39,gap:.40,width:.32},{y:.62,gap:.60,width:.30}],
+        ducks:[{xRatio:.46,yRatio:.34},{xRatio:.53,yRatio:.53},{xRatio:.49,yRatio:.74}]
+      },
+      {
+        number:"05", name:"Diamond Heiress · Penthouse Club", theme:"luxury", digRadius:3.1,
+        briefing:"Save precious water across three golden baffles.", difficulty:5,
+        hazards:[[.24,.37,"trash"],[.76,.42,"poop"],[.29,.56,"trash"],[.74,.65,"trash"],[.26,.76,"poop"]],
+        tubRatio:{targetWater:42}, spawners:[{xRatio:.48,yRatio:.08,count:170}],
+        gates:[{y:.36,gap:.39,width:.30},{y:.52,gap:.61,width:.29},{y:.69,gap:.44,width:.28}],
+        ducks:[{xRatio:.48,yRatio:.30},{xRatio:.55,yRatio:.45},{xRatio:.46,yRatio:.65}]
+      },
+      {
+        number:"06", name:"Christmas Special · Sugar Snow", theme:"christmas", digRadius:2.8,
+        briefing:"Guide the limited snow spring through candy baffles.", difficulty:6,
+        hazards:[[.25,.37,"poop"],[.73,.42,"trash"],[.28,.51,"trash"],[.75,.60,"poop"],[.30,.69,"trash"],[.72,.77,"trash"]],
+        tubRatio:{targetWater:48}, spawners:[{xRatio:.48,yRatio:.08,count:160}],
+        gates:[{y:.35,gap:.38,width:.28},{y:.47,gap:.62,width:.27},{y:.59,gap:.40,width:.26},{y:.71,gap:.58,width:.25}],
+        ducks:[{xRatio:.48,yRatio:.30},{xRatio:.54,yRatio:.53},{xRatio:.51,yRatio:.76}]
+      },
+      {
+        number:"07", name:"Halloween Special · Pumpkin Moon", theme:"halloween", digRadius:2.5,
+        briefing:"Dig carefully through a pumpkin maze with six traps.", difficulty:7,
+        hazards:[[.26,.37,"poop"],[.74,.41,"trash"],[.29,.50,"trash"],[.72,.57,"poop"],[.30,.66,"poop"],[.73,.75,"trash"]],
+        tubRatio:{targetWater:54}, spawners:[{xRatio:.48,yRatio:.08,count:150}],
+        gates:[{y:.34,gap:.36,width:.25},{y:.46,gap:.64,width:.24},{y:.58,gap:.39,width:.23},{y:.70,gap:.60,width:.22}],
+        ducks:[{xRatio:.47,yRatio:.29},{xRatio:.46,yRatio:.52},{xRatio:.51,yRatio:.75}]
+      },
+      {
+        number:"08", name:"Cosmic Finale · Galaxy Spa", theme:"space", digRadius:2.2,
+        briefing:"Five docking gates, seven pollution traps. Save every drop.", difficulty:8,
+        hazards:[[.24,.36,"trash"],[.75,.39,"poop"],[.28,.47,"trash"],[.73,.53,"poop"],[.29,.62,"trash"],[.73,.69,"trash"],[.28,.77,"poop"]],
+        tubRatio:{targetWater:60}, spawners:[{xRatio:.48,yRatio:.08,count:140}],
+        gates:[{y:.33,gap:.35,width:.24},{y:.43,gap:.64,width:.23},{y:.53,gap:.38,width:.22},{y:.63,gap:.61,width:.21},{y:.73,gap:.47,width:.20}],
+        ducks:[{xRatio:.48,yRatio:.28},{xRatio:.47,yRatio:.48},{xRatio:.49,yRatio:.76}]
+      }
+    ];
+
+    /* =========================================================================
+     * 5. GAME ENGINE
+     * ========================================================================= */
+    const BATH_SPOTS = [[.50,.84],[.79,.83],[.20,.39],[.24,.68],[.77,.84],[.78,.46],[.22,.82],[.56,.72]];
+    const TREASURE_POSITIONS = [[.10,.32], [.82,.29], [.40,.36], [.17,.57], [.87,.61], [.32,.75], [.72,.76], [.57,.24], [.61,.55], [.08,.79], [.92,.43], [.47,.60], [.27,.28], [.76,.44], [.22,.86], [.83,.86], [.52,.43], [.37,.49]];
+
+    class GameEngine {
+      constructor() {
+        this.canvas = document.getElementById("game-canvas");
+        this.ctx = this.canvas.getContext("2d");
+        this.scene = document.createElement('canvas');
+        this.reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false;
+        this.girlContainer = document.getElementById("girl-container");
+
+        this.currentLevelIdx = 0;
+        this.cellSize = 12;
+        this.W = 0;
+        this.H = 0;
+
+        this.grid = new Uint8Array(0);
+        this.particles = [];
+        this.ducks = [];
+        this.crumbs = [];
+        this.waterCollected = 0;
+        this.waterPercent = 0;
+        this.isCompleted = false;
+        this.isPointerDown = false;
+
+        this.setupEvents();
+        this.resize();
+        this.initLevel(0);
+        this.loop(performance.now());
+      }
+
+      setupEvents() {
+        window.addEventListener("resize", () => {
+          this.resize();
+          this.initLevel(this.currentLevelIdx);
+        });
+
+        const dig = (e) => {
+          if (!this.isPointerDown) return;
+          const rect = this.canvas.getBoundingClientRect();
+          const px = e.clientX - rect.left;
+          const py = e.clientY - rect.top;
+          const gx = Math.floor(px / this.cellSize);
+          const gy = Math.floor(py / this.cellSize);
+          const r = LEVELS[this.currentLevelIdx].digRadius || 3.6;
+          let dug = false;
+          this.collectNearby(px,py,r*this.cellSize);
+          // Hazards trigger when the actual circular digging brush touches them.
+          this.hazards.forEach(h => {
+            if (!h.triggered && Math.hypot(px - h.x, py - h.y) <= r * this.cellSize + this.hazardRadius) this.pollute(h);
+          });
+
+          for (let dy = -Math.ceil(r); dy <= Math.ceil(r); dy++) {
+            for (let dx = -Math.ceil(r); dx <= Math.ceil(r); dx++) {
+              if (dx * dx + dy * dy <= r * r) {
+                const nx = gx + dx;
+                const ny = gy + dy;
+                if (nx >= 0 && nx < this.W && ny >= 0 && ny < this.H) {
+                  const idx = ny * this.W + nx;
+                  const c = this.grid[idx];
+                  if (isCloud(c)) {
+                    this.grid[idx] = CELL_AIR;
+                    dug = true;
+                    if (Math.random() < 0.45) {
+                      const isStar = Math.random() < 0.28;
+                      let col = "#ffffff";
+                      if (c === CELL_CLOUD_PINK) col = Math.random() > 0.5 ? "#fbcfe8" : "#f472b6";
+                      else if (c === CELL_CLOUD_LAVENDER) col = Math.random() > 0.5 ? "#ede9fe" : "#c4b5fd";
+                      else if (c === CELL_CLOUD_PEACH) col = Math.random() > 0.5 ? "#fed7aa" : "#fba875";
+
+                      this.crumbs.push({
+                        x: nx * this.cellSize + this.cellSize / 2,
+                        y: ny * this.cellSize + this.cellSize / 2,
+                        vx: (Math.random() - 0.5) * 2.2,
+                        vy: -Math.random() * 1.8 - 0.3,
+                        radius: isStar ? 2.5 : 4 + Math.random() * 5,
+                        life: 1,
+                        maxLife: 1,
+                        color: isStar ? "#fef08a" : col,
+                        isStar
+                      });
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if (dug) { this.cloudLayerDirty = true; audio.dig(); }
+        };
+
+        this.canvas.addEventListener("pointerdown", (e) => {
+          const rect = this.canvas.getBoundingClientRect();
+          if (this.collectNearby(e.clientX-rect.left,e.clientY-rect.top,13)) {
+            this.isPointerDown = false; return;
+          }
+          if (this.sparkTreasure(e.clientX - rect.left, e.clientY - rect.top)) {
+            this.isPointerDown = false;
+            return;
+          }
+          this.isPointerDown = true;
+          this.canvas.setPointerCapture(e.pointerId);
+          dig(e);
+        });
+        this.canvas.addEventListener("pointermove", dig);
+        this.canvas.addEventListener("pointerup", () => { this.isPointerDown = false; });
+        this.canvas.addEventListener("pointercancel", () => { this.isPointerDown = false; });
+
+        document.getElementById("restart-btn").addEventListener("click", () => {
+          this.initLevel(this.currentLevelIdx);
+        });
+        document.getElementById("next-level-btn").addEventListener("click", () => {
+          document.getElementById("victory-modal").style.display = "none";
+          this.initLevel((this.currentLevelIdx + 1) % LEVELS.length);
+        });
+        document.getElementById("bath-action").addEventListener("click", () => {
+          if (this.isDirty) this.initLevel(this.currentLevelIdx);
+          else if (this.isCompleted) this.initLevel((this.currentLevelIdx + 1) % LEVELS.length);
+        });
+        document.getElementById("stay-btn").addEventListener("click", () => {
+          document.getElementById("victory-modal").style.display = "none";
+        });
+      }
+
+      resize() {
+        const bounds = document.getElementById("game-container").getBoundingClientRect();
+        this.canvas.width = Math.round(bounds.width);
+        this.canvas.height = Math.round(bounds.height);
+        // Keep the entire simulation inside the visible viewport on small screens.
+        this.cellSize = Math.min(12, this.canvas.width / 40, this.canvas.height / 30);
+        this.W = Math.floor(this.canvas.width / this.cellSize);
+        this.H = Math.floor(this.canvas.height / this.cellSize);
+        this.cloudTexture = null;
+        this.scene.width = Math.ceil(this.canvas.width / 2);
+        this.scene.height = Math.ceil(this.canvas.height / 2);
+      }
+
+      initLevel(idx) {
+        this.currentLevelIdx = idx;
+        const lvl = LEVELS[idx];
+        document.getElementById('game-container').dataset.theme = lvl.theme;
+        document.getElementById('episode-info').textContent = lvl.briefing
+          ? `Difficulty ${lvl.difficulty}/8 · Drops ${lvl.spawners.reduce((n,s)=>n+s.count,0)} / Goal ${lvl.tubRatio.targetWater} · ${lvl.briefing}`
+          : 'Beginner · Dig a clean route from the spring to the bath';
+        // Palette and terrain caches must follow the selected episode.
+        this.cloudTexture = null;
+        document.getElementById("level-name").textContent = lvl.name;
+        document.getElementById("victory-modal").style.display = "none";
+
+        // Build Level Switcher buttons
+        const btnBox = document.getElementById("level-buttons");
+        btnBox.innerHTML = "";
+        LEVELS.forEach((l, i) => {
+          const b = document.createElement("button");
+          b.className = `level-btn ${i === idx ? "active" : ""}`;
+          b.textContent = l.number;
+          b.onclick = () => this.initLevel(i);
+          btnBox.appendChild(b);
+        });
+
+        const W = this.W;
+        const H = this.H;
+        this.grid = new Uint8Array(W * H);
+        this.isDirty = false;
+        document.getElementById('water-bar').style.background = 'linear-gradient(to right,#f3a8ce,#c8a4df)';
+        this.hazardRadius = Math.min(13, this.canvas.width / 35);
+        this.hazards = lvl.hazards.map(([x,y,type]) => ({x:x*this.canvas.width, y:y*this.canvas.height, type, triggered:false}));
+        this.backgroundLayer = null;
+        document.getElementById('bath-status').style.display = 'none';
+        this.cloudLayerDirty = true;
+        this.waterCollected = 0;
+        this.waterPercent = 0;
+        this.isCompleted = false;
+        this.crumbs = [];
+        this.updateHUD();
+
+        // Lay out the sprite and its real intake together, respecting the visible HUD.
+        const [spotX, spotY] = BATH_SPOTS[idx];
+        const girlWidth = Math.min(220, this.canvas.width * .42, this.canvas.height * .30);
+        const svgScale = girlWidth / 100, girlHeight = girlWidth * 1.25;
+        const tubW = Math.max(3, Math.round(80 * svgScale / this.cellSize));
+        const tubH = Math.max(2, Math.ceil(36 * svgScale / this.cellSize));
+        const centerX = Math.max(girlWidth/2+8, Math.min(this.canvas.width-girlWidth/2-8,spotX*this.canvas.width));
+        const hudBottom = this.canvas.width <= 450 ? 202 : this.canvas.width <= 900 ? 152 : 108;
+        const intakeY = Math.max(hudBottom + 74*svgScale, Math.min(this.canvas.height-58-49*svgScale,spotY*this.canvas.height));
+        const tubX = centerX/this.cellSize-tubW/2;
+        const tubY = Math.floor(intakeY/this.cellSize);
+        this.tub = {x:tubX,y:tubY,w:tubW,h:tubH,target:lvl.tubRatio.targetWater};
+        this.girlContainer.style.left = `${centerX-girlWidth/2}px`;
+        this.girlContainer.style.top = `${tubY*this.cellSize-74*svgScale}px`;
+        this.girlContainer.style.width = `${girlWidth}px`;
+        this.girlContainer.style.height = `${girlHeight}px`;
+        this.score = 0; this.sparkleFrames = 0; this.collectedGems = new Set();
+        this.reservoirs = []; this.gateRows = [];
+        document.getElementById('score-floats').innerHTML = '';
+        this.updateGirl(0,false);
+        this.levelHeightScale = 1;
+
+        // Generate Clouds Ocean (Filling the lower screen!)
+        const startY = Math.floor(H * 0.27);
+        for (let y = startY; y < H - 1; y++) {
+          for (let x = Math.max(2, Math.floor(W * .12)); x < Math.min(W - 2, Math.ceil(W * .88)); x++) {
+            if (y < startY + 1.7 + 1.6 * Math.sin(x * 0.38) + 0.7 * Math.cos(x * 0.71)) continue;
+            const noise = Math.sin(x * 0.18) * Math.cos(y * 0.15) + Math.sin((x + y) * 0.12);
+            if (noise > 0.5) this.grid[y * W + x] = CELL_CLOUD_PINK;
+            else if (noise > 0.1) this.grid[y * W + x] = CELL_CLOUD_WHITE;
+            else if (noise > -0.3) this.grid[y * W + x] = CELL_CLOUD_LAVENDER;
+            else this.grid[y * W + x] = CELL_CLOUD_PEACH;
+          }
+        }
+
+        // Borders
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            if (x < 2 || x >= W - 2 || y >= H - 1) this.grid[y * W + x] = CELL_ROCK;
+          }
+        }
+
+        // Solid cloud foundation directly beneath the tub
+        for (let y = tubY + tubH; y < H - 1; y++) {
+          for (let x = Math.max(2, Math.floor(tubX) - 4); x < Math.min(W - 2, Math.ceil(tubX + tubW) + 4); x++) {
+            this.grid[y * W + x] = CELL_CLOUD_WHITE;
+          }
+        }
+        // Air pocket inside tub intake
+        for (let y = Math.max(0, tubY - 1); y < Math.min(H - 1, tubY + tubH); y++) {
+          for (let x = Math.floor(tubX); x < Math.ceil(tubX + tubW); x++) {
+            this.grid[y * W + x] = CELL_AIR;
+          }
+        }
+
+        this.buildRelayLayout(lvl);
+
+        // Celestial Star Ducks
+        this.ducks = lvl.ducks.map((d,i) => ({
+          x: Math.round(this.routePoint(.24+i*.27).x + (i%2 ? 1 : -1)*2),
+          y: Math.round(this.routePoint(.24+i*.27).y),
+          isCollected: false,
+          fillLevel: 0
+        }));
+        this.ducks.forEach(d => {
+          for (let dy = -3; dy <= 3; dy++) {
+            for (let dx = -3; dx <= 3; dx++) {
+              if (dx*dx+dy*dy<=9 && d.x+dx>=0 && d.x+dx<W && d.y+dy>=0 && d.y+dy<H && isCloud(this.grid[(d.y+dy)*W+d.x+dx])) this.grid[(d.y+dy)*W+d.x+dx]=CELL_AIR;
+            }
+          }
+        });
+
+        // Spawn Water Particles
+        this.particles = [];
+        lvl.spawners.forEach(s => {
+          const sx = this.source.x;
+          const sy = this.source.y;
+          for (let i = 0; i < s.count; i++) {
+            this.particles.push({
+              x: sx + (Math.random() - 0.5) * 5,
+              y: sy + (Math.random() - 0.5) * 2,
+              vx: (Math.random() - 0.5) * 0.4,
+              vy: Math.random() * 0.2
+            });
+          }
+        });
+        this.updateHUD();
+      }
+
+      routePoint(t) {
+        const y=this.source.y+(this.tub.y-this.source.y)*t;
+        const points=[this.source,...this.reservoirs.flatMap(r=>[{x:r.x,y:r.y},{x:r.x,y:r.y+3.1}]),{x:this.tub.x+this.tub.w/2,y:this.tub.y}];
+        for(let i=1;i<points.length;i++) {
+          if(y<=points[i].y){const a=points[i-1],b=points[i],f=(y-a.y)/Math.max(.1,b.y-a.y);return {x:a.x+(b.x-a.x)*f,y};}
+        }
+        return points[points.length-1];
+      }
+
+      buildRelayLayout(lvl) {
+        const cs=this.cellSize,W=this.W,H=this.H;
+        const hudBottom=this.canvas.width<=450?202:this.canvas.width<=900?152:108;
+        this.source={x:W*.5,y:Math.max(H*.08,(hudBottom+6)/cs)};
+        const span=this.tub.y-this.source.y;
+        const count=this.currentLevelIdx>=3 && span>=22 ? 2 : 1;
+        const targetX=this.tub.x+this.tub.w/2;
+        this.reservoirs=Array.from({length:count},(_,i)=>({id:i,x:i===0?this.source.x:targetX,
+          y:Math.floor(this.source.y+span*(i===0?.25:.61)),half:Math.max(2,Math.min(4,Math.floor(W*.075))),stored:[],opened:false}));
+        const set=(x,y,type)=>{if(x>=2&&x<W-2&&y>=0&&y<H-1)this.grid[y*W+x]=type;};
+        this.reservoirs.forEach(r=>{
+          r.x=Math.round(r.x);
+          for(let y=r.y;y<=r.y+2;y++)for(let x=r.x-r.half-1;x<=r.x+r.half+1;x++){
+            set(x,y,y===r.y+2||x===r.x-r.half-1||x===r.x+r.half+1?CELL_ROCK:CELL_AIR);
+          }
+        });
+        // A diggable plug holds the initial source. Relay valves never teleport water.
+        const sy=Math.floor(this.source.y)+2;
+        if(this.reservoirs[0].y>sy+2) for(let x=Math.floor(this.source.x)-5;x<=Math.ceil(this.source.x)+5;x++)set(x,sy,Math.abs(x-this.source.x)<=3?CELL_CLOUD_PINK:CELL_ROCK);
+        const route=[this.source,...this.reservoirs.flatMap(r=>[{x:r.x,y:r.y},{x:r.x,y:r.y+3.1}]),{x:targetX,y:this.tub.y+1}];
+        const distance=(x,y)=>{
+          let best=Infinity;
+          for(let j=1;j<route.length;j++){
+            const a=route[j-1],b=route[j],dx=b.x-a.x,dy=b.y-a.y;
+            const t=Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy||1)));
+            best=Math.min(best,Math.hypot(x-a.x-dx*t,y-a.y-dy*t));
+          }
+          return best;
+        };
+        const placed=[];
+        this.hazards.forEach((q,i)=>{
+          const p=this.routePoint(.35+i/Math.max(1,this.hazards.length-1)*.43);
+          const margin=(lvl.digRadius||3.6)+this.hazardRadius/cs+2;
+          const preferred=p.x+(i%2?-1:1)*W*.26;
+          let pick=null,cost=Infinity;
+          for(let x=3;x<W-3;x++)for(let dy=-2;dy<=2;dy++){
+            const y=p.y+dy;
+            if(y<this.source.y||distance(x,y)<margin||placed.some(h=>Math.hypot(x-h.x,y-h.y)<3))continue;
+            const c=Math.abs(x-preferred)+Math.abs(dy)*3;
+            if(c<cost){pick={x,y};cost=c;}
+          }
+          // Compact landscape screens may have no room beside a steep chute.
+          // Put any extra traps below the bath rather than block the only route.
+          if(!pick)pick={x:Math.max(3,Math.min(W-4,preferred)),y:Math.min(H-3,this.tub.y+5+i)};
+          q.x=pick.x*cs;q.y=pick.y*cs;placed.push(pick);
+        });
+        (lvl.gates||[]).forEach((g,i,arr)=>{
+          const p=this.routePoint(.36+i/Math.max(1,arr.length-1)*.43),y=Math.floor(p.y);
+          if(this.reservoirs.some(r=>Math.abs(y-r.y)<4))return;
+          const half=Math.max(3,Math.round(W*g.width/2));
+          for(let x=2;x<W-2;x++)if(Math.abs(x-p.x)>half)set(x,y,CELL_ROCK);
+          this.gateRows.push({y0:y,y1:y+1,center:p.x});
+        });
+        const controls=document.getElementById('relay-controls');controls.innerHTML='';
+        this.reservoirs.forEach(r=>{
+          const button=document.createElement('button');button.className='relay-valve';
+          button.style.left=`${r.x*cs}px`;button.style.top=`${(r.y+3)*cs}px`;
+          button.addEventListener('click',()=>{r.opened=!r.opened;this.refreshRelay(r);});
+          controls.appendChild(button);r.button=button;this.refreshRelay(r);
+        });
+      }
+
+      refreshRelay(r) {
+        if(!r.button)return;
+        r.button.textContent=`Pool ${r.id+1}: ${r.stored.length} · ${r.opened?'Close':'Release'}`;
+        r.button.setAttribute('aria-pressed',String(r.opened));
+        r.button.setAttribute('aria-label',`${r.opened?'Close':'Open'} relay pool ${r.id+1}, ${r.stored.length} stored drops`);
+      }
+
+      advanceRelays() {
+        this.reservoirs.forEach((r,i)=>{
+          if(!r.opened||!r.stored.length)return;
+          const target=this.reservoirs[i+1]||{x:this.tub.x+this.tub.w/2,y:this.tub.y+1};
+          for(let n=0;n<2&&r.stored.length;n++){
+            const saved=r.stored.shift();
+            this.particles.push({x:r.x+(Math.random()-.5)*.4,y:r.y+3.1,vx:0,vy:3,
+              routeTarget:{x:target.x,y:target.y+.3},lastRelay:r.id,star:saved.star});
+          }
+          this.refreshRelay(r);
+        });
+      }
+
+      renderRelays(ctx,time) {
+        const cs=this.cellSize;
+        this.reservoirs.forEach((r,i)=>{
+          const next=this.reservoirs[i+1]||{x:this.tub.x+this.tub.w/2,y:this.tub.y};
+          const x0=r.x*cs,y0=(r.y+3)*cs,x1=next.x*cs,y1=next.y*cs;
+          ctx.fillStyle='#a6d8e9';ctx.globalAlpha=.7;
+          for(let t=0;t<1;t+=.055)ctx.fillRect(Math.round(x0+(x1-x0)*t)-1,Math.round(y0+(y1-y0)*t),3,2);
+          ctx.globalAlpha=1;
+          const x=(r.x-r.half)*cs,y=r.y*cs,ww=(r.half*2+1)*cs;
+          ctx.fillStyle='#d8d1ed';ctx.fillRect(x-3,y-2,ww+6,cs*2+5);
+          ctx.fillStyle='#f9f6ff';ctx.fillRect(x,y,ww,cs*2);
+          const height=Math.min(cs*1.65,r.stored.length/Math.max(1,this.tub.target)*cs*1.65);
+          ctx.fillStyle=this.isDirty?'#aaa172':r.stored.some(p=>p.star)?'#f5df99':'#8ed6e6';
+          ctx.fillRect(x+2,y+cs*2-height,ww-4,height);
+          ctx.fillStyle='#fff';ctx.fillRect(x+4,y+cs*2-height,Math.min(12,ww-8),2);
+        });
+      }
+
+      scoreBurst(x,y,points,label) {
+        this.score+=points;
+        this.sparkleFrames=600;
+        if(!this.isDirty){this.particles.forEach(p=>p.star=true);this.reservoirs.forEach(r=>r.stored.forEach(p=>p.star=true));}
+        for(let j=0;j<24;j++){
+          const angle=j*Math.PI*2/24,speed=.7+Math.random()*2.3;
+          this.crumbs.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-.6,radius:2+Math.random()*3,
+            life:2.4,maxLife:2.4,color:['#fff1a9','#fff','#f3aed1','#d9c4ff'][j%4],isStar:true});
+        }
+        const pop=document.createElement('span');pop.className='score-pop';pop.textContent=`+${points} ${label} · ${this.isDirty?'Pollution remains':'STAR WATER ×2'}`;
+        pop.style.left=`${Math.max(70,Math.min(this.canvas.width-70,x))}px`;pop.style.top=`${y}px`;
+        pop.addEventListener('animationend',()=>pop.remove());document.getElementById('score-floats').appendChild(pop);
+        this.updateHUD();audio.duck();
+      }
+
+      collectDuck(d) {
+        if(d.isCollected)return false;
+        d.isCollected=true;d.fillLevel=1;this.scoreBurst(d.x*this.cellSize,d.y*this.cellSize,150,'Duck');return true;
+      }
+
+      collectNearby(px,py,radius) {
+        let found=false;
+        this.ducks.forEach(d=>{if(!d.isCollected&&Math.hypot(px-d.x*this.cellSize,py-d.y*this.cellSize)<=radius+10){this.collectDuck(d);found=true;}});
+        TREASURE_POSITIONS.forEach(([nx,ny],i)=>{
+          if((i%5!==1 && i%5!==2)||this.collectedGems.has(i))return;
+          const x=nx*this.canvas.width,y=ny*this.canvas.height;
+          if(!isCloud(this.grid[Math.floor(y/this.cellSize)*this.W+Math.floor(x/this.cellSize)]))return;
+          if(Math.hypot(px-x,py-y)<=radius+10){this.collectedGems.add(i);this.scoreBurst(x,y,i%5===2?150:100,i%5===2?'Duck':'Diamond');found=true;}
+        });
+        return found;
+      }
+
+      updateHUD() {
+        document.getElementById('score-value').textContent = `Score ${this.score || 0}`;
+        document.getElementById('water-quality').textContent = this.isDirty ? 'Polluted water' : this.sparkleFrames > 0 ? 'Star water ×2' : 'Fresh water';
+        document.getElementById("water-bar").style.width = `${this.waterPercent}%`;
+        document.getElementById("water-pct").textContent = `${this.waterPercent}%`;
+        const duckEls = document.querySelectorAll(".duck-star");
+        this.ducks.forEach((d, i) => {
+          if (duckEls[i]) {
+            duckEls[i].style.opacity = d.isCollected ? "1" : "0.25";
+            duckEls[i].style.transform = d.isCollected ? "scale(1.15)" : "scale(1)";
+          }
+        });
+      }
+
+      loop(currentTime) {
+        requestAnimationFrame((t) => this.loop(t));
+        const dt = 0.016;
+        const W = this.W;
+        const H = this.H;
+        const grid = this.grid;
+        const particles = this.particles;
+
+        if(this.sparkleFrames>0) { this.sparkleFrames--; if(!this.sparkleFrames)this.updateHUD(); }
+        this.advanceRelays();
+        // Physics Update
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.vy += 13.5 * dt;
+          if(p.routeTarget && p.y < p.routeTarget.y) {
+            const dx=p.routeTarget.x-p.x,dy=p.routeTarget.y-p.y;
+            // Enchanted glass chutes guide water sideways, always downhill.
+            p.vx=Math.max(-120,Math.min(120,dx/Math.max(dy,.25)*Math.max(3,p.vy)));
+          }
+          if(this.sparkleFrames>0 && !this.isDirty) p.star=true;
+          p.vx *= 0.985;
+          p.vy = Math.min(p.vy, 15);
+
+          const steps = 2;
+          const subDt = dt / steps;
+          for (let s = 0; s < steps; s++) {
+            const nextX = p.x + p.vx * subDt;
+            const nextY = p.y + p.vy * subDt;
+            const cx = Math.floor(nextX);
+            const cy = Math.floor(nextY);
+
+            if (cx < 0 || cx >= W || cy >= H) {
+              particles.splice(i, 1);
+              break;
+            }
+
+            const relay=this.reservoirs.find(r=>cx>=r.x-r.half && cx<=r.x+r.half && cy>=r.y && cy<r.y+2 && p.lastRelay!==r.id);
+            if(relay) {
+              relay.stored.push({star:!!p.star});particles.splice(i,1);this.refreshRelay(relay);break;
+            }
+
+            // Tub collection
+            if (cx >= this.tub.x && cx < this.tub.x + this.tub.w && cy >= this.tub.y && cy < this.tub.y + this.tub.h) {
+              particles.splice(i, 1);
+              this.waterCollected += p.star && !this.isDirty ? 2 : 1;
+              audio.splash();
+              this.waterPercent = Math.min(100, Math.round((this.waterCollected / this.tub.target) * 100));
+              this.updateHUD();
+              this.updateGirl(this.waterPercent, this.isCompleted);
+
+              if (this.waterCollected >= this.tub.target && !this.isCompleted && !this.isDirty) {
+                this.isCompleted = true;
+                audio.victory();
+                this.updateGirl(100, true);
+                this.updateBathStatus();
+              }
+              break;
+            }
+
+            // Duck collection
+            for (let d = 0; d < this.ducks.length; d++) {
+              const duck = this.ducks[d];
+              if (!duck.isCollected && (p.x - duck.x) ** 2 + (p.y - duck.y) ** 2 < 12) {
+                duck.fillLevel += 0.25;
+                if (duck.fillLevel >= 1) {
+                  this.collectDuck(duck);
+                }
+              }
+            }
+
+            // Collision with clouds / rocks
+            const cell = grid[cy * W + cx];
+            if (cell !== CELL_AIR) {
+              p.vy *= -0.25;
+              const dir = Math.random() > 0.5 ? 1 : -1;
+              const guide = cell === CELL_ROCK && this.gateRows.find(g => cy >= g.y0 && cy < g.y1);
+              // Gently sloped baffles carry resting water toward their opening.
+              if (guide) p.vx = Math.sign(guide.center - cx) * 2.6;
+              else p.vx += dir * (0.9 + Math.random() * 0.9);
+              const leftAir = cx > 0 && grid[cy * W + cx - 1] === CELL_AIR;
+              const rightAir = cx < W - 1 && grid[cy * W + cx + 1] === CELL_AIR;
+              if (leftAir && !rightAir) { p.x = cx - 0.15; p.vx = -1.3; }
+              else if (rightAir && !leftAir) { p.x = cx + 1.15; p.vx = 1.3; }
+              else p.y = Math.floor(p.y);
+              break;
+            } else {
+              p.x = nextX;
+              p.y = nextY;
+            }
+          }
+        }
+
+        // Crumb updates
+        for (let i = this.crumbs.length - 1; i >= 0; i--) {
+          const c = this.crumbs[i];
+          c.x += c.vx;
+          c.y += c.vy;
+          c.life -= dt * 1.6;
+          if (c.life <= 0) this.crumbs.splice(i, 1);
+        }
+
+        // RENDER SCREEN
+        this.render(currentTime);
+      }
+
+      updateBathStatus() {
+        const bar = document.getElementById('bath-status');
+        bar.style.display = this.isDirty || this.isCompleted ? 'flex' : 'none';
+        document.getElementById('bath-status-text').textContent = this.isDirty
+          ? 'Oh no! Polluted water. Restart and avoid poop and trash.'
+          : 'Bubble time ♡ Relax as long as you like. Continue when ready.';
+        document.getElementById('bath-action').textContent = this.isDirty ? 'Try again ↺' : 'Next level →';
+      }
+
+      pollute(hazard) {
+        hazard.triggered = true;
+        this.isDirty = true;
+        this.isCompleted = false;
+        this.updateGirl(this.waterPercent, false);
+        this.updateBathStatus();
+        this.updateHUD();
+        document.getElementById('water-bar').style.background = '#a6a06a';
+        for (let i=0;i<16;i++) this.crumbs.push({x:hazard.x,y:hazard.y,vx:(Math.random()-.5)*3,vy:-Math.random()*2,
+          radius:3+Math.random()*3,life:1.3,maxLife:1.3,color:i%2?'#b8b477':'#8e865e',isStar:false});
+      }
+
+      renderHazards(ctx, time) {
+        this.hazards.forEach(h => {
+          const k = this.hazardRadius / 12;
+          ctx.save(); ctx.translate(Math.round(h.x), Math.round(h.y)); ctx.scale(k,k);
+          const r=(c,x,y,w,h)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)};
+          if(h.triggered) ctx.globalAlpha=.45;
+          // A pale warning backing makes hazards distinct from collectible ornaments.
+          r('#fff4d5',-18,-18,36,36);r('#dfb394',-18,-18,36,2);r('#dfb394',-18,16,36,2);
+          if(h.type==='poop') {
+            r('#8c6472',-12,4,24,9);r('#8c6472',-9,-3,18,8);r('#8c6472',-5,-10,11,8);r('#8c6472',-1,-15,5,6);
+            r('#b78b8c',-10,5,20,3);r('#b78b8c',-7,-2,14,3);r('#d7afa0',-3,-9,7,2);
+            r('#fff1df',-5,5,3,3);r('#fff1df',4,5,3,3);r('#5c5061',-4,6,1,2);r('#5c5061',5,6,1,2);
+          } else {
+            r('#788c91',-10,-8,20,22);r('#b6c6bf',-8,-5,16,17);r('#809796',-4,-3,2,13);r('#809796',3,-3,2,13);
+            r('#6b7e83',-13,-10,26,4);r('#6b7e83',-4,-14,9,4);r('#f2c2a2',-15,9,7,5);r('#b8ce96',8,4,8,9);
+          }
+          r('#e79496',12,-20,3,8);r('#e79496',12,-10,3,3);
+          ctx.restore();
+        });
+      }
+
+      drawEpisodeWorld(c,w,h,theme) {
+        const r=(color,x,y,ww,hh)=>{c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),Math.round(ww),Math.round(hh))};
+        const poly=(color,ps)=>{c.fillStyle=color;c.beginPath();ps.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fill()};
+        const window=(x,y,ww,hh,frame,light)=>{r(frame,x-3,y-3,ww+6,hh+6);r(light,x,y,ww,hh);r(frame,x+ww/2,y,2,hh);r(frame,x,y+hh/2,ww,2)};
+        if(theme==='agent') {
+          // Glass headquarters, radar terminals and security-camera silhouettes.
+          for(let i=0;i<18;i++){
+            const x=i*w/17,bh=h*(.17+(i%5)*.035);
+            r('#7698a6',x,h*.42-bh,w/22,bh);
+            for(let y=h*.42-bh+6;y<h*.41;y+=13)r('#c4eddf',x+4,y,w/30,2);
+          }
+          for(const x of [w*.015,w*.89]){
+            r('#527482',x,h*.40,w*.095,h*.53);r('#a8cbc6',x+4,h*.41,w*.095-8,h*.51);
+            for(let k=0;k<3;k++){
+              const y=h*(.44+k*.14);window(x+10,y,w*.07,h*.09,'#3f6577','#7fb5b5');
+              for(let q=0;q<4;q++)r(q%2?'#c5f4d5':'#e8cecf',x+16,y+10+q*7,w*.04-q*3,2);
+            }
+            r('#efc4cc',x+6,h*.87,w*.08,6);
+          }
+          for(const nx of [.19,.80]){
+            const x=nx*w,y=h*.16;r('#648496',x,y,6,25);r('#4c6e80',x-14,y+22,28,13);r('#b9eee1',x+10,y+25,5,7);
+          }
+          r('#8babb1',0,h*.94,w,h*.06);
+          for(let x=0;x<w;x+=28)r('#d0e6dd',x,h*.95,16,2);
+        } else if(theme==='luxury') {
+          // Rose-gold penthouse: marble floor, columns, chandelier and skyline.
+          for(let i=0;i<17;i++){
+            const x=i*w/16,bh=h*(.12+(i%7)*.024);r('#b7a0bd',x,h*.40-bh,w/21,bh);
+            for(let y=h*.40-bh+6;y<h*.39;y+=12)r('#ffe8b3',x+4,y,w/28,2);
+          }
+          for(const x of [w*.025,w*.91]){
+            r('#c9aa99',x,0,w*.06,h*.9);r('#fff0d6',x+4,0,w*.06-8,h*.9);
+            for(let j=0;j<4;j++)r('#dbbc96',x+7+j*8,0,2,h*.9);
+            r('#b9946a',x-5,h*.88,w*.06+10,9);
+          }
+          r('#e6cfae',w*.50,h*.05,2,h*.13);
+          for(let i=-3;i<=3;i++){
+            const x=w*.50+i*17,y=h*.18-Math.abs(i)*7;r('#caab79',x,y,2,16);
+            poly('#ffedc9',[[x-5,y+13],[x+6,y+13],[x+1,y+28]]);
+          }
+          r('#e7c5cc',0,h*.91,w,h*.09);
+          for(let x=0;x<w;x+=37){r('#c8a8be',x,h*.91,1,h*.09);r('#fff0dd',x+7,h*.94,23,1)}
+          for(const x of [w*.05,w*.93]){
+            r('#bca782',x-9,h*.76,22,30);r('#fff0b6',x-7,h*.72,18,6);
+            poly('#f0d594',[[x-13,h*.72],[x-7,h*.66],[x+9,h*.66],[x+15,h*.72]]);
+          }
+        } else if(theme==='christmas') {
+          // Snow village, striped candy posts, decorated firs and wrapped gifts.
+          for(let i=0;i<7;i++){
+            const x=i*w/6,base=h*.42;r('#cda6b0',x,base-40,48,40);
+            poly('#fff8f4',[[x-6,base-40],[x+24,base-69],[x+53,base-40]]);
+            window(x+9,base-30,13,17,'#ad8499','#ffe6a4');
+          }
+          const tree=(x,y,size)=>{
+            r('#9b7e7e',x-4,y,8,size*.3);
+            for(let k=0;k<4;k++){
+              const yy=y-size+k*size*.22,ww=size*(.36+k*.19);
+              poly('#598f85',[[x,yy-15],[x-ww/2,yy+size*.3],[x+ww/2,yy+size*.3]]);
+              r('#eaf3e8',x-ww*.3,yy+size*.17,ww*.6,4);
+              r(k%2?'#e7a4b7':'#ffe0a2',x-ww*.18,yy+size*.26,4,4);
+              r(k%2?'#ffe0a2':'#e7a4b7',x+ww*.2,yy+size*.28,4,4);
+            }
+            r('#ffe8a6',x-2,y-size-19,4,13);r('#ffe8a6',x-6,y-size-15,12,4);
+          };
+          for(const nx of [.055,.94]){tree(nx*w,h*.79,h*.31);tree(nx*w,h*.50,h*.19)}
+          r('#f8f5ef',0,h*.94,w,h*.06);
+          for(const nx of [.035,.07,.91,.95]){
+            const x=nx*w,y=h*.91;r('#d985a0',x,y,22,18);r('#ffebbe',x+9,y,3,18);r('#ffebbe',x,y+5,22,3);
+          }
+          for(const x of [w*.115,w*.875])for(let j=0;j<12;j++)r(j%2?'#faf5ed':'#d58b9e',x,h*.49+j*7,7,7);
+        } else if(theme==='halloween') {
+          // Haunted manor, crooked fence and friendly jack-o'-lanterns.
+          for(const x of [w*.025,w*.90]){
+            r('#73638f',x,h*.38,w*.075,h*.42);
+            poly('#574977',[[x-8,h*.38],[x+w*.037,h*.27],[x+w*.08+8,h*.38]]);
+            for(let k=0;k<3;k++)window(x+9,h*(.43+k*.10),w*.045,h*.06,'#51446e','#ffd296');
+          }
+          r('#7b668e',0,h*.94,w,h*.06);
+          for(let x=0;x<w;x+=23){r('#58496f',x,h*.90,3,h*.07);poly('#58496f',[[x-3,h*.90],[x+1,h*.89],[x+5,h*.90]])}
+          r('#58496f',0,h*.925,w,3);
+          const pumpkin=(x,y,size)=>{
+            r('#bd796e',x-size*.5,y-size*.3,size,size*.65);r('#e5a17e',x-size*.37,y-size*.4,size*.74,size*.8);
+            r('#f4bb8d',x-size*.15,y-size*.36,size*.15,size*.7);r('#8d9576',x-2,y-size*.55,5,size*.18);
+            poly('#675375',[[x-size*.27,y-size*.08],[x-size*.16,y-size*.24],[x-size*.05,y-size*.08]]);
+            poly('#675375',[[x+size*.05,y-size*.08],[x+size*.16,y-size*.24],[x+size*.27,y-size*.08]]);
+            r('#ffe1a0',x-size*.2,y+size*.14,size*.4,3);
+          };
+          for(const nx of [.04,.085,.92,.965]){pumpkin(nx*w,h*.88,25);pumpkin(nx*w,h*.65,18)}
+          for(const nx of [.18,.77]){const x=nx*w,y=h*.20;r('#e6d7ee',x,y,16,19);r('#e6d7ee',x+3,y-4,10,4);r('#78628c',x+4,y+4,2,3);r('#78628c',x+11,y+4,2,3)}
+        } else {
+          // Orbital spa: portholes, ringed planet, antennae and docking station.
+          const px=w*.72,py=h*.20,pr=Math.min(w*.045,33);
+          c.strokeStyle='#e8bfdc';c.lineWidth=4;c.beginPath();c.ellipse(px,py,pr*1.8,pr*.4,-.2,0,Math.PI*2);c.stroke();
+          c.fillStyle='#b2a4d9';c.beginPath();c.arc(px,py,pr,0,Math.PI*2);c.fill();
+          r('#dfceef',px-pr*.6,py-pr*.3,pr,3);
+          for(const x of [w*.02,w*.91]){
+            r('#8f8ab4',x,0,w*.07,h*.94);r('#c9c6e1',x+5,0,w*.07-10,h*.94);
+            for(let k=0;k<5;k++){
+              const y=h*(.30+k*.12);window(x+10,y,w*.045,h*.07,'#8989b1','#7776a6');
+              r('#d7e7e7',x+14,y+7,5,3);r('#c2a9dc',x+22,y+19,4,4);
+            }
+          }
+          r('#9993bb',0,h*.94,w,h*.06);r('#dad7ee',0,h*.945,w,3);
+          for(let x=0;x<w;x+=40)r('#c4bbdf',x,h*.97,22,2);
+          const x=w*.24,y=h*.19;r('#d7cbe9',x,y,22,14);r('#7f7da6',x-26,y,20,17);r('#7f7da6',x+28,y,20,17);r('#afd0dd',x-23,y+4,14,2);r('#afd0dd',x+31,y+4,14,2);
+        }
+      }
+
+      renderWorld(ctx, time) {
+        const w=this.canvas.width,h=this.canvas.height;
+        const theme=LEVELS[this.currentLevelIdx].theme;
+        if(!this.backgroundLayer) {
+          const bg=document.createElement('canvas');bg.width=w;bg.height=h;
+          const c=bg.getContext('2d');
+          const r=(color,x,y,ww,hh)=>{c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),Math.round(ww),Math.round(hh))};
+          const poly=(color,points)=>{c.fillStyle=color;c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fill()};
+          const sky=c.createLinearGradient(0,0,0,h);
+          const specialSkies={agent:['#56758b','#91b9bc','#c5e5db'],luxury:['#c2a7c5','#efd1ce','#fff0d1'],christmas:['#7897ac','#c2d4d9','#f3e6e5'],halloween:['#493a71','#9270a6','#e5b1b7'],space:['#3c3c72','#7c6aa1','#c1a9d3']};
+          const colors=specialSkies[theme] || (theme==='forest'?['#99c5c4','#d2d9c4','#f9decb']:theme==='city'?['#6b649c','#c98da9','#f5c8b4']:['#9caee8','#d6b8e8','#ffe0c8']);
+          colors.forEach((color,i)=>sky.addColorStop(i/2,color));c.fillStyle=sky;c.fillRect(0,0,w,h);
+          // Wispy stepped clouds in the open sky.
+          for(let i=0;i<10;i++) {
+            const x=((i*137)%997)/997*w,y=(.13+(i%4)*.055)*h;
+            r(theme==='forest'?'#e8e6d7':'#f6d9eb',x,y,65+(i%3)*15,4);
+            r('#fce6ed',x+16,y-5,35,5);r('#fff1eb',x+25,y-9,18,5);
+          }
+          if(specialSkies[theme]) {
+            this.drawEpisodeWorld(c,w,h,theme);
+          } else if(theme==='castle') {
+            const tower=(x,base,tw,th,roof,light)=>{
+              r('#a08dbf',x-3,base-th+3,tw+6,th+3);r('#e7c6da',x,base-th,tw,th);
+              poly(roof,[[x-6,base-th],[x+tw/2,base-th-tw*.85],[x+tw+6,base-th]]);
+              r('#ffe8e0',x+3,base-th+4,3,th-4);
+              for(let yy=base-th+12;yy<base-10;yy+=20)for(let xx=x+8;xx<x+tw-4;xx+=14){r('#af88ad',xx-1,yy-1,7,12);r(light,xx,yy,5,10);r('#fff6bf',xx+2,yy,1,10)}
+              r('#bc92b9',x-4,base-9,tw+8,4);
+            };
+            // Bridges and floating palace islands, visible through the dug channels too.
+            for(let i=0;i<6;i++) {
+              const x=(.08+i*.16)*w,base=(.39+(i%2)*.09)*h;
+              r('#bba5d1',x-36,base+12,100,10);
+              poly('#c3b2da',[[x-37,base+22],[x+20,base+98],[x+64,base+22]]);
+              tower(x,base,24+(i%3)*6,h*(.15+(i%3)*.045),'#bd9ad1','#ffedb3');
+              r('#cdb1d3',x+24,base-1,w*.14,7);
+              for(let q=0;q<5;q++)r('#ccb3d7',x+30+q*w*.026,base+5,4,25);
+            }
+            // Rose-roofed foreground towers and flower-covered balconies.
+            tower(w*.015,h*.79,w*.085,h*.36,'#de8fb7','#fff1bb');
+            tower(w*.905,h*.78,w*.08,h*.43,'#db87b2','#fff0bd');
+            r('#d6b3cd',0,h*.82,w*.115,h*.18);r('#d6b3cd',w*.89,h*.81,w*.11,h*.19);
+            for(const side of [0,.89])for(let row=0;row<5;row++){
+              r('#f1ced8',w*side,h*(.82+row*.035),w*.11,3);
+              for(let j=0;j<6;j++){
+                const x=w*(side+.006+j*.018),y=h*(.81+row*.035);
+                r('#91ac9b',x,y,6,10);r(j%2?'#ef9ec3':'#ffe1e4',x-2,y-3,7,6);r('#fff3c0',x,y-2,2,2);
+              }
+            }
+            r('#ecd1dd',0,h*.955,w,h*.045);
+            for(let x=0;x<w;x+=24)r('#d0b4d0',x,h*.96,2,h*.04);
+          } else if(theme==='forest') {
+            // Layered woodland hills, a winding creek and tiny farm cottages.
+            for(let layer=0;layer<3;layer++) {
+              const points=[[0,h]];
+              for(let x=0;x<=w+20;x+=20)points.push([x,h*(.35+layer*.13)+Math.sin(x/(105-layer*20)+layer)*h*.06]);
+              points.push([w,h]);poly(['#91b5ac','#7fa99c','#b2c4a1'][layer],points);
+            }
+            poly('#b5e4df',[[w*.42,h*.42],[w*.48,h*.42],[w*.60,h*.7],[w*.52,h],[w*.34,h],[w*.47,h*.7]]);
+            const tree=(x,y,size,pink)=>{
+              r('#947b7b',x-size*.08,y,size*.16,size*.8);
+              for(let l=0;l<3;l++){
+                const yy=y-size*.5+l*size*.2,ww=size*(.7+l*.22);
+                r(pink?'#d79ab5':'#68988b',x-ww/2,yy,ww,size*.32);
+                r(pink?'#f1b9cf':'#91b5a0',x-ww/2+3,yy,ww-6,size*.12);
+                r(pink?'#ffd9e4':'#bad0a9',x-ww/2+7,yy+3,ww*.5,3);
+              }
+            };
+            for(let i=0;i<14;i++)tree((i/13)*w,h*.38+Math.sin(i)*h*.035,h*(.13+(i%3)*.025),i%4===0);
+            for(let i=0;i<9;i++){tree(w*(.02+(i%3)*.038),h*(.55+Math.floor(i/3)*.17),55+(i%2)*20,i%3===0);tree(w*(.91+(i%3)*.038),h*(.5+Math.floor(i/3)*.18),65,i%3===1)}
+            const hut=(x,y)=>{r('#f1dbb7',x,y,45,38);poly('#bd8198',[[x-5,y],[x+22,y-25],[x+50,y]]);r('#ffe7ae',x+6,y+9,10,12);r('#a88b8c',x+28,y+15,10,23);r('#bd8198',x+35,y-23,6,13)};
+            hut(w*.035,h*.72);hut(w*.915,h*.76);
+            r('#b5c79f',0,h*.95,w,h*.05);
+            for(let i=0;i<65;i++){
+              const x=(i*71%997)/997*w,y=h*(.95+(i%5)*.009);
+              r('#7f9e88',x,y,2,8);r(i%2?'#f4b7cd':'#fff0b9',x-2,y-2,6,4);
+            }
+          } else {
+            // Panorama seen from inside a spacious high-rise apartment.
+            for(let layer=0;layer<3;layer++)for(let i=0;i<18;i++){
+              const bw=w/17,x=i*w/17-layer*13,base=h*(.68+layer*.12),bh=h*(.26+((i*7+layer*3)%11)*.025);
+              r(['#9a85b1','#81789e','#726a91'][layer],x,base-bh,bw-5,bh);
+              r('#b19bc0',x+3,base-bh+3,3,bh-3);
+              for(let yy=base-bh+9;yy<base-7;yy+=12)for(let xx=x+9;xx<x+bw-8;xx+=10)if((Math.round(xx)+Math.round(yy))%3)r((i+layer)%2?'#ffe5b6':'#d8c2e0',xx,yy,3,5);
+              if(i%5===0)r('#b2a0c2',x+bw/2,base-bh-22,2,22);
+            }
+            r('#c3abbd',0,h*.89,w,h*.11);
+            for(let x=0;x<w;x+=42){r('#a489a4',x,h*.89,2,h*.11);r('#e6ccda',x+2,h*.92,40,2)}
+            // Floor-to-ceiling window mullions, sheer pink curtains and balcony rail.
+            r('#f6dce6',0,0,w*.035,h);r('#f6dce6',w*.965,0,w*.035,h);
+            r('#bd9bb6',w*.035,0,4,h*.9);r('#bd9bb6',w*.96,0,4,h*.9);
+            for(const x of [w*.16,w*.84]){r('#947e9f',x,0,5,h*.89);r('#e9d1dc',x+5,0,3,h*.89)}
+            for(const side of [0,.94])for(let i=0;i<5;i++)r(i%2?'#e8bbd0':'#f6d3e0',w*(side+i*.012),0,w*.012,h*(.76+i*.02));
+            r('#dcb8ce',0,h*.89,w,7);r('#fff0e7',0,h*.89,w,2);
+            for(const x of [w*.065,w*.925]){
+              r('#c6a3b7',x-10,h*.90,26,20);r('#8da89a',x,h*.78,3,h*.12);
+              for(let i=0;i<5;i++){r('#9fb7a3',x-15+(i%2)*17,h*(.78+i*.018),18,7);r('#c2d2b1',x-10+(i%2)*17,h*(.78+i*.018),9,2)}
+            }
+          }
+          this.backgroundLayer=bg;
+        }
+        ctx.drawImage(this.backgroundLayer,0,0);
+        // Theme-specific ambient lights, kept subtle around the puzzle.
+        for(let i=0;i<26;i++){
+          const x=((i*137+37)%997)/997*w;
+          const baseY=theme==='forest'?.2+(i%8)*.087:.07+(i%4)*.065;
+          const y=baseY*h+(this.reduceMotion?0:Math.sin(time/1800+i)*4);
+          ctx.globalAlpha=.35+.5*(.5+.5*Math.sin(time/950+i));
+          ctx.fillStyle=theme==='forest'?'#fff6b2':'#fff2cf';
+          ctx.fillRect(Math.round(x),Math.round(y),2,2);
+          if(i%5===0){ctx.fillRect(Math.round(x)-3,Math.round(y)+1,8,2);ctx.fillRect(Math.round(x),Math.round(y)-3,2,8)}
+        }
+        ctx.globalAlpha=1;
+        if(theme==='christmas') {
+          ctx.fillStyle='#fffaf6';
+          for(let i=0;i<55;i++){
+            const x=((i*83)%997)/997*w + (this.reduceMotion?0:Math.sin(time/2300+i)*5);
+            const y=this.reduceMotion ? (i*61%997)/997*h : ((time*.018+i*61)%h);
+            ctx.fillRect(Math.round(x),Math.round(y),i%3===0?3:2,2);
+          }
+        }
+        if(theme!=='forest'){
+          const x=w*.84,y=h*.13,r=Math.min(25,w*.035);
+          ctx.fillStyle='#fff1ba';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle=theme==='city'?'#8370a1':'#b4afe6';ctx.beginPath();ctx.arc(x-r*.4,y-r*.25,r*.87,0,Math.PI*2);ctx.fill();
+        }
+      }
+
+      updateGirl(water, happy) {
+        happy = happy && !this.isDirty;
+        const key = `${water}:${happy}:${this.isDirty}:${this.currentLevelIdx}`;
+        if (key === this.girlStateKey) return;
+        this.girlStateKey = key;
+        const svg = renderPixelGirlSvg(water, happy, this.isDirty, LEVELS[this.currentLevelIdx].theme);
+        this.girlContainer.dataset.mood = happy ? 'happy' : 'angry';
+        this.girlContainer.setAttribute('aria-label', this.isDirty ? 'Dirty water! The girl is upset. Restart and avoid pollution.' : happy ? 'A happy girl enjoying her bath beneath twinkling stars.' : 'The girl is waiting, frowning beneath a red anger mark.');
+        // Rasterize at one SVG unit per pixel, keeping the porcelain mosaic crisp.
+        // The SVG remains visible while the local data image is decoding.
+        this.girlContainer.innerHTML = svg;
+        const mood = document.createElement('div');
+        mood.className = 'girl-mood';
+        mood.setAttribute('aria-hidden', 'true');
+        mood.innerHTML = happy
+          ? [[12,43],[23,34],[35,40],[43,32],[54,43],[8,53],[39,51]].map(([x,y], i) => `<span class="mood-star" style="left:${x}%;top:${y}%;animation-delay:-${i*.19}s"></span>`).join('')
+          : '<svg class="anger-mark" viewBox="0 0 16 16" shape-rendering="crispEdges"><path d="M2 1v4h4v2H0V1zM10 1h2v4h4v2h-6zM0 10h6v6H4v-4H0zM10 10h6v2h-4v4h-2z" fill="#eb4e73"/></svg>';
+        if (happy) {
+          mood.innerHTML += Array.from({length:10}, (_,i) => `<span class="bath-bubble" style="--x:${24+(i*17)%49}%;--y:${57+(i*7)%20}%;--size:${7+(i%4)*3}px;--delay:-${i*.37}s"></span>`).join('');
+        }
+        this.girlContainer.appendChild(mood);
+        const version = this.girlVersion = (this.girlVersion || 0) + 1;
+        const img = new Image();
+        img.onload = () => {
+          if (version !== this.girlVersion) return;
+          const sprite = document.createElement('canvas');
+          sprite.width = 100; sprite.height = 125;
+          sprite.setAttribute('aria-hidden', 'true');
+          sprite.getContext('2d').drawImage(img, 0, 0, 100, 125);
+          this.girlContainer.querySelector('svg')?.replaceWith(sprite);
+        };
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg.replace('width:100%;height:100%;', 'width:100px;height:125px;'));
+      }
+
+      sparkTreasure(px, py) {
+        if (this.hazards.some(h => !h.triggered && Math.hypot(px-h.x, py-h.y) <= this.hazardRadius+4)) return false;
+        const cw = this.canvas.width, ch = this.canvas.height;
+        const scale = Math.min(1.1, cw / 700 + .35);
+        for (let i = 0; i < TREASURE_POSITIONS.length; i++) {
+          if(this.collectedGems.has(i)) continue;
+          const [nx, ny] = TREASURE_POSITIONS[i];
+          const x = Math.round(nx * cw);
+          const bob = this.reduceMotion ? 0 : Math.round(Math.sin((this.renderTime || 0) / 1100 + i) * 2);
+          const y = Math.round(ny * ch) + bob * scale;
+          const cell = Math.floor(ny * ch / this.cellSize) * this.W + Math.floor(x / this.cellSize);
+          if (!isCloud(this.grid[cell]) || Math.abs(px - x) > 17 * scale + 4 || Math.abs(py - y) > 17 * scale + 4) continue;
+          for (let j = 0; j < 22; j++) {
+            const angle = j * Math.PI * 2 / 22;
+            const speed = .7 + Math.random() * 2.3;
+            this.crumbs.push({x, y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed-.5,
+              radius:2+Math.random()*3, life:2.6, maxLife:2.6,
+              color:['#fff5ac','#ffffff','#ffb6db','#e4c6ff'][j%4], isStar:true});
+          }
+          audio.duck();
+          return true;
+        }
+        return false;
+      }
+
+      renderClouds(ctx, time) {
+        const cw = this.canvas.width, ch = this.canvas.height;
+        if (!this.cloudTexture) {
+          const texture = document.createElement('canvas');
+          const pixel = 2;
+          texture.width = Math.ceil(cw / pixel);
+          texture.height = Math.ceil(ch / pixel);
+          const tc = texture.getContext('2d');
+          // Overlapping round lobes, quantized into soft pixel-art shade bands.
+          const shades = ({agent:['#f3fff8','#e4f4ed','#d0e9e0','#bcdad6','#a8cbc9','#95b8bf','#8ba7b6'],luxury:['#fffdf1','#fff2df','#f9e5d1','#ecd4c6','#dfbed0','#cfb2c8','#bba5c0'],christmas:['#fffef9','#f3faf8','#e6f1ee','#d9e7e8','#c7d9e1','#b5c9d7','#a7b7ce'],halloween:['#fff1ed','#f4dfed','#e5cde4','#d0b5d9','#b99cc8','#a089ba','#8e79a8'],space:['#fff5ff','#ece6ff','#dad7f5','#c5c3e6','#b0afd5','#999bc6','#8589b4']})[LEVELS[this.currentLevelIdx].theme] || ['#fffaf4','#fff0f4','#fce4ef','#f2d2e6','#e9c6df','#d9c3e2','#c6bfdc'];
+          for (let y = 0; y < texture.height; y++) {
+            for (let x = 0; x < texture.width; x++) {
+              const px = x * pixel, py = y * pixel;
+              const row = Math.floor(py / 63);
+              let best = -Infinity, shade = 0;
+              for (let r = row - 1; r <= row + 1; r++) {
+                const offset = (r % 2) * 46;
+                const col = Math.round((px - offset) / 94);
+                for (let c = col - 1; c <= col + 1; c++) {
+                  const cx = c * 94 + offset + Math.sin(r * 4 + c) * 9;
+                  const cy = r * 63 + Math.cos(c * 3 + r) * 10;
+                  const dx = (px - cx) / 61, dy = (py - cy) / 47;
+                  const depth = 1 - dx * dx - dy * dy;
+                  if (depth > best) {
+                    best = depth;
+                    const light = Math.sqrt(Math.max(0, depth)) * 0.64 - dx * 0.23 - dy * 0.37;
+                    shade = Math.max(0, Math.min(6, Math.floor((0.95 - light) * 6)));
+                  }
+                }
+              }
+              const grain = ((x * 17 + y * 31) % 37);
+              if (grain === 0 && shade > 0) shade--;
+              if (grain === 1 && shade < 6) shade++;
+              tc.fillStyle = shades[shade];
+              tc.fillRect(x, y, 1, 1);
+            }
+          }
+          this.cloudTexture = texture;
+        }
+        if (this.cloudLayerDirty || !this.cloudLayer) {
+          const layer = this.cloudMask || document.createElement('canvas');
+          layer.width = cw; layer.height = ch;
+          const lc = layer.getContext('2d');
+          lc.fillStyle = '#fff';
+          for (let y = 0; y < this.H; y++) {
+            for (let x = 0; x < this.W; x++) {
+              if (isCloud(this.grid[y * this.W + x])) lc.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize + .4, this.cellSize + .4);
+            }
+          }
+          this.cloudMask = layer;
+          this.cloudLayer = document.createElement("canvas");
+          this.cloudLayer.width = cw; this.cloudLayer.height = ch;
+          this.cloudLayerDirty = false;
+        }
+        const lc = this.cloudLayer.getContext('2d');
+        lc.clearRect(0, 0, cw, ch);
+        lc.drawImage(this.cloudMask, 0, 0);
+        lc.globalCompositeOperation = 'source-in';
+        lc.imageSmoothingEnabled = false;
+        const driftX = this.reduceMotion ? 0 : Math.round(Math.sin(time / 2400) * 5);
+        const driftY = this.reduceMotion ? 0 : Math.round(Math.cos(time / 3100) * 3);
+        lc.drawImage(this.cloudTexture, driftX - 8, driftY - 8, cw + 16, ch + 16);
+        lc.globalCompositeOperation = 'source-over';
+        ctx.drawImage(this.cloudLayer, 0, 0);
+      }
+
+      renderTreasures(ctx, time) {
+        const cw = this.canvas.width, ch = this.canvas.height;
+        const positions = TREASURE_POSITIONS;
+        positions.forEach(([nx, ny], i) => {
+          if(this.collectedGems.has(i)) return;
+          const x = Math.round(nx * cw), y = Math.round(ny * ch);
+          // Buried ornaments disappear when their cloud is dug away.
+          const gx = Math.floor(x / this.cellSize), gy = Math.floor(y / this.cellSize);
+          if (!isCloud(this.grid[gy * this.W + gx])) return;
+          ctx.save();
+          ctx.translate(x, y);
+          const size = Math.min(1.1, cw / 700 + .35);
+          ctx.scale(size, size);
+          ctx.translate(0, (this.reduceMotion ? 0 : Math.round(Math.sin(time / 1100 + i) * 2)));
+          const rect = (color, x, y, w, h) => { ctx.fillStyle = color; ctx.fillRect(x,y,w,h); };
+          const theme = LEVELS[this.currentLevelIdx].theme;
+          if (theme === 'christmas' && i % 5 === 0) {
+            rect('#be6b85',-12,-7,24,19);rect('#e79eb5',-13,-10,26,6);
+            rect('#fff0c4',-2,-10,4,22);rect('#fff0c4',-12,-1,24,3);
+            rect('#fff0c4',-8,-15,7,5);rect('#fff0c4',2,-15,7,5);
+          } else if (theme === 'halloween' && i % 5 === 0) {
+            rect('#bd827f',-12,-6,24,17);rect('#f2b485',-9,-9,18,23);
+            rect('#8c987f',-2,-15,5,7);rect('#ffe0a0',-7,-3,4,4);rect('#ffe0a0',4,-3,4,4);
+            rect('#805f85',-6,6,13,3);rect('#f9d19b',-4,7,3,2);
+          } else if (i % 5 === 0) {
+            // A little turquoise treasure chest with brass fittings.
+            rect('#b286ab',-12,-7,24,18); rect('#d59ac0',-10,-9,20,8);
+            rect('#ffe0ed',-8,-9,16,3); rect('#f6d895',-12,0,24,3);
+            rect('#f9e4a4',-9,-7,3,17); rect('#f9e4a4',6,-7,3,17);
+            rect('#a17d58',-2,-1,5,6); rect('#fff0b6',-1,0,3,3);
+          } else if (i % 5 === 1) {
+            // Faceted candy-colored diamonds.
+            const pink = i % 2;
+            ctx.beginPath(); ctx.moveTo(-11,-4); ctx.lineTo(-5,-11); ctx.lineTo(6,-11); ctx.lineTo(12,-4); ctx.lineTo(0,13); ctx.closePath();
+            ctx.fillStyle = pink ? '#d9a7e3' : '#db96c6'; ctx.fill();
+            ctx.strokeStyle = '#8587ae'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-11,-4); ctx.lineTo(0,13); ctx.lineTo(-3,-4); ctx.lineTo(3,-11); ctx.closePath(); ctx.fillStyle = pink ? '#f6d9ee' : '#ffe2f7'; ctx.fill();
+            rect('#fffaf4',-3,-9,5,3);
+          } else if (i % 5 === 2) {
+            rect('#e1ad59',-10,0,18,8); rect('#ffe893',-10,-3,16,8);
+            rect('#ffe893',2,-11,9,11); rect('#fff3b4',3,-11,6,3);
+            rect('#ebac6c',11,-5,5,3); rect('#66607d',7,-8,2,2);
+            rect('#f9cd70',-6,0,7,3); rect('#c8e8ef',-12,10,27,2);
+          } else {
+            // Animated four-point pixel stars with warm outlines.
+            const pulse = .65 + .35 * Math.sin(time / 600 + i);
+            ctx.globalAlpha = pulse;
+            rect('#d5b58d',-3,-11,6,22); rect('#d5b58d',-11,-3,22,6);
+            rect('#fff1ad',-2,-10,4,20); rect('#fff1ad',-10,-2,20,4);
+            rect('#fffbe1',-4,-4,8,8); rect('#fff',-1,-3,2,6);
+            rect('#fff',14,-12,2,6); rect('#fff',12,-10,6,2);
+          }
+          ctx.restore();
+        });
+      }
+
+      render(currentTime) {
+        this.renderTime = currentTime;
+        const ctx = this.scene.getContext('2d');
+        ctx.setTransform(this.scene.width / this.canvas.width, 0, 0, this.scene.height / this.canvas.height, 0, 0);
+        const cw = this.canvas.width;
+        const ch = this.canvas.height;
+        const W = this.W;
+        const H = this.H;
+        const cs = this.cellSize;
+        const grid = this.grid;
+
+        this.renderWorld(ctx, currentTime);
+
+        this.renderClouds(ctx, currentTime);
+
+        // E. Render Multi-colored Dreamy Clouds (White, Pink, Lavender, Peach)
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            const type = grid[y * W + x];
+            if (type === CELL_AIR) continue;
+            const px = x * cs;
+            const py = y * cs;
+
+            if (isCloud(type)) {
+              // Cloud volume is drawn as a cached pixel texture, masked by the dig grid.
+              continue;
+            } else if (type === CELL_ROCK) {
+              if (x < 2 || x >= W - 2 || y >= H - 1) continue;
+              ctx.fillStyle = ({agent:"#627e8b",luxury:"#ba9861",christmas:"#b9657a",halloween:"#80629e",space:"#7c7fab"})[LEVELS[this.currentLevelIdx].theme] || "#bd9dbd";
+              ctx.fillRect(px, py, cs, cs);
+              ctx.fillStyle = "#e3c5da";
+              ctx.fillRect(px + 1, py + 1, cs - 2, cs - 2);
+              if ((x + y) % 4 === 0) {
+                ctx.fillStyle = "#f59e0b";
+                ctx.fillRect(px + 3, py + 3, 2, 2);
+              }
+            }
+          }
+        }
+
+        this.renderRelays(ctx,currentTime);
+        this.renderTreasures(ctx, currentTime);
+        this.renderHazards(ctx, currentTime);
+
+        // F. Celestial Star Ducks
+        this.ducks.forEach(d => {
+          ctx.save();
+          ctx.translate(d.x * cs, d.y * cs);
+          ctx.strokeStyle = "#fef08a";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.ellipse(3, -11, 7, 2.5, 0, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.fillStyle = d.isCollected ? "#fde047" : "#eab308";
+          ctx.beginPath();
+          ctx.ellipse(0, 2, 11, 8, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(5, -4, 6.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.ellipse(-3, 1, 4.5, 3, -0.2, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = "#f97316";
+          ctx.beginPath();
+          ctx.ellipse(11, -3, 4, 2.2, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = "#1e1b4b";
+          ctx.beginPath();
+          ctx.arc(5, -5, 1.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // G. Celestial Starlight Water Stream
+        this.particles.forEach(p => {
+          const px = p.x * cs;
+          const py = p.y * cs;
+          ctx.fillStyle = this.isDirty ? "rgba(143,143,72,.35)" : "rgba(56,189,248,.38)";
+          ctx.beginPath();
+          ctx.arc(px, py, 5.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = this.isDirty ? "#93935f" : p.star ? "#f6d87e" : "#38bdf8";
+          ctx.beginPath();
+          ctx.arc(px, py, 3.8, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(px - 1.2, py - 1.2, 2.4, 2.4);
+        });
+
+        // H. Cloud Mist & Star Sparks
+        this.crumbs.forEach(c => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, c.life / c.maxLife);
+          if (c.isStar) {
+            ctx.fillStyle = c.color;
+            ctx.fillRect(c.x - c.radius * 1.6, c.y - 0.6, c.radius * 3.2, 1.2);
+            ctx.fillRect(c.x - 0.6, c.y - c.radius * 1.6, 1.2, c.radius * 3.2);
+          } else {
+            ctx.fillStyle = c.color;
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        });
+        this.ctx.imageSmoothingEnabled = false;
+        this.ctx.clearRect(0, 0, cw, ch);
+        this.ctx.drawImage(this.scene, 0, 0, cw, ch);
+      }
+    }
+
+    // Launch game on DOMContentLoaded or immediate
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => new GameEngine());
+    } else {
+      new GameEngine();
+    }
+  </script>
+</body>
+</html>

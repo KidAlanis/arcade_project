@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { useTicketWallet } from "@/components/ticket-wallet";
 import { BATH_LEVELS } from "./levels";
 import { GameBoard } from "./game-board";
@@ -43,118 +42,94 @@ export function PixelBathGame() {
   };
 
   return (
-    <main className="w-full max-w-none px-3 sm:px-8 py-3 select-none font-sans flex flex-col items-center">
-      {/* Top Arcade Breadcrumb & Level Selector */}
-      <div className="w-full max-w-5xl flex flex-wrap items-center justify-between gap-3 pb-3 text-xs font-bold text-gray-400">
-        <div className="flex items-center gap-2">
-          <Link href="/" className="hover:text-white transition-colors text-sm">
-            ← 返回街机大厅
-          </Link>
-          <span>/</span>
-          <span className="text-[#ff65c5]">CABINET 01</span>
-          <span>/</span>
-          <span className="text-amber-300 font-extrabold text-sm">星露爱洗澡 · PIXEL BATH</span>
-        </div>
+    <div className="fixed inset-0 w-screen h-screen overflow-hidden select-none font-sans z-50 bg-[#0e0b20]">
+      {/* 1. Fullscreen Game Canvas Board */}
+      <GameBoard
+        key={currentLevel.id}
+        level={currentLevel}
+        onLevelComplete={handleLevelComplete}
+        onRestart={() => setShowVictoryModal(false)}
+      />
 
-        {/* Level Switcher Buttons */}
-        <div className="flex items-center gap-2 bg-[#1f1610] px-3.5 py-1.5 rounded-full border border-[#5c3818] shadow-md">
-          <span className="text-xs text-amber-300 font-bold">地图关卡:</span>
-          {BATH_LEVELS.map((lvl, idx) => {
-            const stars = levelStars[lvl.id] || 0;
-            const isActive = idx === currentLevelIndex;
-            return (
-              <button
-                key={lvl.id}
-                onClick={() => {
-                  bathAudio.pop();
-                  setCurrentLevelIndex(idx);
-                  setShowVictoryModal(false);
-                }}
-                className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${
-                  isActive
-                    ? "bg-amber-500 text-stone-900 shadow-lg scale-105"
-                    : "bg-[#331c11] text-amber-200/80 hover:bg-[#4a2817]"
-                }`}
-              >
-                第 {lvl.number} 关 {stars > 0 && `(${stars}★)`}
-              </button>
-            );
-          })}
-        </div>
+      {/* 2. Floating Minimal Level Switcher (Top Left, alongside HUD) */}
+      <div className="absolute top-16 left-4 z-40 flex items-center gap-1.5 bg-[#171032]/85 px-3 py-1.5 rounded-full border border-indigo-400/40 shadow-lg backdrop-blur-md">
+        <span className="text-[11px] text-amber-300 font-bold mr-1">关卡:</span>
+        {BATH_LEVELS.map((lvl, idx) => {
+          const stars = levelStars[lvl.id] || 0;
+          const isActive = idx === currentLevelIndex;
+          return (
+            <button
+              key={lvl.id}
+              onClick={() => {
+                bathAudio.pop();
+                setCurrentLevelIndex(idx);
+                setShowVictoryModal(false);
+              }}
+              className={`px-2.5 py-0.5 rounded-full text-xs font-black transition-all ${
+                isActive
+                  ? "bg-gradient-to-r from-amber-400 to-amber-500 text-stone-900 shadow-[0_0_10px_rgba(251,191,36,0.6)] scale-105"
+                  : "bg-[#281b50]/80 text-indigo-200/90 hover:bg-[#382670] border border-indigo-400/20"
+              }`}
+            >
+              {lvl.number} {stars > 0 && `(${stars}★)`}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Main Full-Screen Game Arcade Cabinet Frame */}
-      <div className="w-full max-w-5xl min-h-[780px] rounded-3xl overflow-hidden border-4 border-[#5c3818] shadow-[0_20px_60px_rgba(0,0,0,0.8)] bg-[#1e130c] p-4 sm:p-6 flex flex-col items-center justify-center relative">
-        <GameBoard
-          key={currentLevel.id}
-          level={currentLevel}
-          onLevelComplete={handleLevelComplete}
-          onRestart={() => setShowVictoryModal(false)}
-        />
+      {/* 3. Level Complete Celebration Modal (Dreamio Sky City Style) */}
+      {showVictoryModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-gradient-to-b from-[#24184a] via-[#1f1442] to-[#160c33] border-3 border-amber-400/80 rounded-3xl p-7 max-w-sm w-full shadow-[0_0_50px_rgba(251,191,36,0.4)] text-center relative animate-popIn text-white">
+            <div className="text-5xl mb-2 filter drop-shadow-[0_0_12px_rgba(251,191,36,0.8)]">
+              ✨ 🫧 ✨
+            </div>
+            <h3 className="text-2xl font-black text-amber-300 mb-1 drop-shadow-md">
+              仙泉满溢！暖汤开泡！
+            </h3>
+            <p className="text-xs text-indigo-200/90 mb-4">
+              云朵被拨开，纯净星泉流入云端浴池！小女孩开心地泡在暖汤里冒起粉嫩泡泡～
+            </p>
 
-        {/* Level Complete Celebration Modal */}
-        {showVictoryModal && (
-          <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-[#fff9eb] border-5 border-[#5c3818] rounded-3xl p-7 max-w-sm w-full shadow-2xl text-center relative animate-popIn">
-              <div className="text-5xl mb-2">🎉</div>
-              <h3 className="text-2xl font-black text-[#4a2810] mb-1">
-                水满啦！舒服地泡澡啦！
-              </h3>
-              <p className="text-xs text-[#795548] mb-4">
-                小女孩开心地笑啦，周围冒起了可爱的像素泡泡！
-              </p>
-
-              {/* Ducks Star Rating */}
-              <div className="flex items-center justify-center gap-3 mb-4 bg-[#fcedc7] py-2.5 rounded-2xl border-2 border-[#5c3818]">
-                {[1, 2, 3].map((starNum) => (
-                  <span
-                    key={starNum}
-                    className={`text-4xl transition-transform ${
-                      starNum <= lastDucksCount
-                        ? "scale-110 drop-shadow-[0_0_10px_#f59e0b]"
-                        : "opacity-25 grayscale"
-                    }`}
-                  >
-                    🐥
-                  </span>
-                ))}
-              </div>
-
-              <div className="p-3 bg-[#f5ebe0] rounded-xl border border-[#d6ccc2] mb-5 font-bold text-xs text-[#5d4037]">
-                🎟️ 恭喜获得街机奖券: +{lastDucksCount * 2 + 5} 张！
-              </div>
-
-              <div className="flex flex-col gap-2.5">
-                <button
-                  onClick={handleNextLevel}
-                  className="w-full py-3 bg-[#e67e22] hover:bg-[#d35400] text-white font-black text-sm rounded-2xl border-3 border-[#4a2810] shadow-md transition-transform hover:scale-[1.02] active:scale-95"
+            {/* Ducks Star Rating */}
+            <div className="flex items-center justify-center gap-3 mb-4 bg-[#110b28]/90 py-3 rounded-2xl border border-indigo-400/40 shadow-inner">
+              {[1, 2, 3].map((starNum) => (
+                <span
+                  key={starNum}
+                  className={`text-4xl transition-transform ${
+                    starNum <= lastDucksCount
+                      ? "scale-110 drop-shadow-[0_0_12px_#fde047]"
+                      : "opacity-20 grayscale"
+                  }`}
                 >
-                  {currentLevelIndex < BATH_LEVELS.length - 1
-                    ? "前往下一关地图 →"
-                    : "重新游玩本关 ↺"}
-                </button>
-                <button
-                  onClick={() => setShowVictoryModal(false)}
-                  className="w-full py-2.5 text-xs font-bold text-[#8d6e63] hover:text-[#4a2810]"
-                >
-                  留在当前画面
-                </button>
-              </div>
+                  🐥
+                </span>
+              ))}
+            </div>
+
+            <div className="p-3 bg-[#2d1b54]/80 rounded-xl border border-indigo-400/30 mb-5 font-bold text-xs text-amber-200 shadow-inner">
+              🎟️ 恭喜获得街机奖券: +{lastDucksCount * 2 + 5} 张！
+            </div>
+
+            <div className="flex flex-col gap-2.5">
+              <button
+                onClick={handleNextLevel}
+                className="w-full py-3 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-stone-900 font-black text-sm rounded-2xl border-2 border-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.5)] transition-transform hover:scale-[1.02] active:scale-95"
+              >
+                {currentLevelIndex < BATH_LEVELS.length - 1
+                  ? "飞向下一片云海 →"
+                  : "重新游玩本关 ↺"}
+              </button>
+              <button
+                onClick={() => setShowVictoryModal(false)}
+                className="w-full py-2 text-xs font-bold text-indigo-300 hover:text-white transition-colors"
+              >
+                留在当前画面欣赏云景
+              </button>
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Under-Cabinet Description Bar */}
-      <div className="mt-3 text-center text-xs text-[#9895aa] flex flex-wrap items-center justify-center gap-3">
-        <span>🌱 像素治愈风 · 星露谷风格</span>
-        <span>•</span>
-        <span>⛏️ 类似小鳄鱼爱洗澡物理玩法：挖通泥土导流泉水</span>
-        <span>•</span>
-        <span>🐥 水流经过可收集小黄鸭获取 3 星评级</span>
-        <span>•</span>
-        <span>🛁 浴桶注满水即可通关并赚取街机奖券</span>
-      </div>
-    </main>
+        </div>
+      )}
+    </div>
   );
 }

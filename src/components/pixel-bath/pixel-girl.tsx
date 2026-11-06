@@ -2,203 +2,208 @@
 
 import React from "react";
 
+/**
+ * EXACT pixel art paths reconstructed pixel-for-pixel from the user's uploaded image.
+ * Sprite dimensions: 31 columns x 40 rows.
+ * Palette matched directly to the original colors with crisp pixel rendering.
+ */
+export const PIXEL_GIRL_PATHS: Record<string, { color: string; d: string; label: string }> = {
+  K: {
+    color: "#110e10",
+    label: "Black outline & hair strands",
+    d: "M13 0h8v1h-8zM10 1h3v1h-3zM21 1h2v1h-2zM8 2h2v1h-2zM23 2h2v1h-2zM7 3h1v1h-1zM25 3h1v1h-1zM6 4h1v1h-1zM26 4h1v1h-1zM5 5h1v1h-1zM27 5h1v1h-1zM4 6h1v1h-1zM28 6h1v1h-1zM3 7h1v1h-1zM29 7h1v1h-1zM3 8h1v1h-1zM29 8h1v1h-1zM3 9h1v1h-1zM14 9h1v1h-1zM29 9h1v1h-1zM2 10h1v1h-1zM13 10h1v1h-1zM30 10h1v1h-1zM2 11h1v1h-1zM12 11h1v1h-1zM16 11h1v1h-1zM30 11h1v1h-1zM2 12h1v1h-1zM12 12h1v1h-1zM16 12h1v1h-1zM30 12h1v1h-1zM2 13h1v1h-1zM11 13h1v1h-1zM15 13h1v1h-1zM19 13h1v1h-1zM30 13h1v1h-1zM2 14h1v1h-1zM11 14h1v1h-1zM14 14h1v1h-1zM20 14h1v1h-1zM30 14h1v1h-1zM2 15h1v1h-1zM10 15h1v1h-1zM12 15h2v1h-2zM15 15h7v1h-7zM30 15h1v1h-1zM3 16h1v1h-1zM9 16h1v1h-1zM22 16h2v1h-2zM30 16h1v1h-1zM0 17h1v1h-1zM3 17h1v1h-1zM9 17h1v1h-1zM24 17h1v1h-1zM29 17h1v1h-1zM1 18h1v1h-1zM3 18h1v1h-1zM5 18h2v1h-2zM8 18h1v1h-1zM24 18h1v1h-1zM29 18h1v1h-1zM2 19h1v1h-1zM4 19h1v1h-1zM8 19h1v1h-1zM25 19h1v1h-1zM27 19h2v1h-2zM2 20h1v1h-1zM4 20h1v1h-1zM8 20h1v1h-1zM25 20h1v1h-1zM29 20h1v1h-1zM1 21h1v1h-1zM5 21h2v1h-2zM8 21h1v1h-1zM25 21h1v1h-1zM29 21h1v1h-1zM1 22h1v1h-1zM8 22h1v1h-1zM25 22h1v1h-1zM27 22h2v1h-2zM1 23h1v1h-1zM9 23h1v1h-1zM25 23h2v1h-2zM2 24h1v1h-1zM9 24h1v1h-1zM25 24h1v1h-1zM3 25h1v1h-1zM7 25h2v1h-2zM24 25h1v1h-1zM23 26h1v1h-1z",
+  },
+  H: {
+    color: "#362a29",
+    label: "Dark hair fill",
+    d: "M13 1h8v1h-8zM10 2h13v1h-13zM8 3h17v1h-17zM7 4h19v1h-19zM6 5h21v1h-21zM5 6h23v1h-23zM4 7h3v1h-3zM8 7h12v1h-12zM22 7h7v1h-7zM4 8h3v1h-3zM10 8h10v1h-10zM23 8h1v1h-1zM26 8h3v1h-3zM4 9h4v1h-4zM11 9h3v1h-3zM15 9h5v1h-5zM23 9h1v1h-1zM26 9h3v1h-3zM3 10h10v1h-10zM14 10h16v1h-16zM3 11h9v1h-9zM13 11h3v1h-3zM17 11h13v1h-13zM3 12h9v1h-9zM13 12h3v1h-3zM17 12h13v1h-13zM3 13h8v1h-8zM12 13h3v1h-3zM16 13h3v1h-3zM20 13h6v1h-6zM27 13h3v1h-3zM3 14h8v1h-8zM12 14h2v1h-2zM15 14h5v1h-5zM21 14h4v1h-4zM26 14h4v1h-4zM3 15h7v1h-7zM22 15h2v1h-2zM25 15h5v1h-5zM4 16h5v1h-5zM24 16h6v1h-6zM4 17h5v1h-5zM25 17h4v1h-4zM4 18h1v1h-1zM7 18h1v1h-1zM25 18h4v1h-4zM3 19h1v1h-1zM7 19h1v1h-1zM26 19h1v1h-1zM3 20h1v1h-1zM7 20h1v1h-1zM26 20h1v1h-1zM2 21h3v1h-3zM7 21h1v1h-1zM26 21h1v1h-1zM2 22h6v1h-6zM26 22h1v1h-1zM2 23h7v1h-7zM3 24h6v1h-6zM4 25h3v1h-3z",
+  },
+  W: {
+    color: "#ffffff",
+    label: "White highlights / shirt / polka dots / shoes",
+    d: "M7 7h1v1h-1zM20 7h2v1h-2zM7 8h3v1h-3zM20 8h3v1h-3zM24 8h2v1h-2zM8 9h3v1h-3zM20 9h3v1h-3zM24 9h2v1h-2zM10 24h1v1h-1zM24 24h1v1h-1zM9 25h4v1h-4zM21 25h3v1h-3zM10 26h3v1h-3zM19 26h4v1h-4zM10 27h2v1h-2zM16 27h1v1h-1zM18 27h6v1h-6zM10 28h3v1h-3zM14 28h2v1h-2zM19 28h5v1h-5zM12 29h1v1h-1zM14 29h2v1h-2zM17 29h1v1h-1zM19 29h3v1h-3zM14 30h2v1h-2zM19 30h2v1h-2zM15 31h6v1h-6zM16 33h1v1h-1zM20 33h1v1h-1zM14 34h1v1h-1zM18 34h1v1h-1zM15 36h1v1h-1zM14 37h1v1h-1zM19 37h1v1h-1zM14 39h3v1h-3zM18 39h3v1h-3z",
+  },
+  R: {
+    color: "#cb1639",
+    label: "Red hair clip",
+    d: "M26 13h1v1h-1zM25 14h1v1h-1zM24 15h1v1h-1z",
+  },
+  F: {
+    color: "#fff5ee",
+    label: "Fair skin",
+    d: "M11 15h1v1h-1zM14 15h1v1h-1zM10 16h12v1h-12zM10 17h14v1h-14zM9 18h3v1h-3zM14 18h7v1h-7zM23 18h1v1h-1zM5 19h2v1h-2zM9 19h3v1h-3zM14 19h7v1h-7zM23 19h2v1h-2zM5 20h2v1h-2zM9 20h3v1h-3zM14 20h7v1h-7zM23 20h2v1h-2zM27 20h2v1h-2zM9 21h2v1h-2zM14 21h7v1h-7zM24 21h1v1h-1zM27 21h2v1h-2zM9 22h2v1h-2zM14 22h3v1h-3zM18 22h3v1h-3zM24 22h1v1h-1zM11 23h13v1h-13zM13 24h8v1h-8zM14 26h2v1h-2zM17 26h1v1h-1zM12 27h1v1h-1zM14 27h2v1h-2zM11 30h2v1h-2zM21 30h2v1h-2zM10 31h3v1h-3zM21 31h3v1h-3zM10 32h2v1h-2zM22 32h3v1h-3z",
+  },
+  S: {
+    color: "#b3a398",
+    label: "Chin shadow",
+    d: "M10 23h1v1h-1zM24 23h1v1h-1zM11 24h2v1h-2zM21 24h3v1h-3zM13 25h8v1h-8z",
+  },
+  P: {
+    color: "#fca7b5",
+    label: "Soft blush",
+    d: "M11 21h3v1h-3zM21 21h3v1h-3zM11 22h3v1h-3zM21 22h3v1h-3z",
+  },
+  M: {
+    color: "#ce9ba5",
+    label: "Mouth",
+    d: "M17 22h1v1h-1z",
+  },
+  E: {
+    color: "#604743",
+    label: "Warm brown eyes",
+    d: "M12 18h2v1h-2zM21 18h2v1h-2zM12 19h2v1h-2zM21 19h2v1h-2zM12 20h2v1h-2zM21 20h2v1h-2z",
+  },
+  N: {
+    color: "#848287",
+    label: "Silver necklace & pendant",
+    d: "M16 26h1v1h-1zM18 26h1v1h-1zM17 27h1v1h-1zM16 28h3v1h-3zM16 29h1v1h-1zM18 29h1v1h-1zM16 30h3v1h-3z",
+  },
+  A: {
+    color: "#b7b7b8",
+    label: "Arm & hand outline",
+    d: "M11 29h1v1h-1zM22 29h1v1h-1zM10 30h1v1h-1zM23 30h1v1h-1zM9 31h1v1h-1zM24 31h1v1h-1zM9 32h1v1h-1zM21 32h1v1h-1zM25 32h1v1h-1zM10 33h2v1h-2zM22 33h2v1h-2z",
+  },
+  B: {
+    color: "#4d3d26",
+    label: "Brown crossbody strap & purse",
+    d: "M13 26h1v1h-1zM13 27h1v1h-1zM13 28h1v1h-1zM13 29h1v1h-1zM13 30h1v1h-1zM13 31h2v1h-2zM12 32h3v1h-3zM12 33h2v1h-2z",
+  },
+  U: {
+    color: "#17447e",
+    label: "Navy blue pants",
+    d: "M15 32h6v1h-6zM14 33h2v1h-2zM17 33h3v1h-3zM15 34h2v1h-2zM19 34h3v1h-3zM14 35h3v1h-3zM18 35h4v1h-4zM14 36h1v1h-1zM16 36h1v1h-1zM18 36h4v1h-4zM15 37h2v1h-2zM18 37h1v1h-1zM20 37h2v1h-2z",
+  },
+  D: {
+    color: "#053a76",
+    label: "Pants dark seam & hem",
+    d: "M21 33h1v1h-1zM13 34h1v1h-1zM17 34h1v1h-1zM22 34h1v1h-1zM13 35h1v1h-1zM17 35h1v1h-1zM22 35h1v1h-1zM13 36h1v1h-1zM17 36h1v1h-1zM22 36h1v1h-1zM13 37h1v1h-1zM17 37h1v1h-1zM22 37h1v1h-1zM13 38h9v1h-9z",
+  },
+};
+
+/**
+ * Standalone Exact Pixel Girl component.
+ * Renders the 100% faithful pixel girl from the uploaded image.
+ */
+export function ExactPixelGirl({
+  size = 120,
+  showBackground = false,
+  className = "",
+}: {
+  size?: number;
+  showBackground?: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`inline-flex items-center justify-center select-none ${className}`}
+      style={{ width: size, height: (size * 40) / 31 }}
+    >
+      <svg
+        viewBox="0 0 31 40"
+        className="w-full h-full"
+        style={{ imageRendering: "pixelated" }}
+        shapeRendering="crispEdges"
+      >
+        {showBackground && (
+          <defs>
+            <radialGradient id="pixelBgGlow" cx="50%" cy="40%" r="65%">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+              <stop offset="45%" stopColor="#f3f4fa" stopOpacity="0.8" />
+              <stop offset="85%" stopColor="#dbe0f5" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#c5ccf0" stopOpacity="1" />
+            </radialGradient>
+          </defs>
+        )}
+        {showBackground && (
+          <rect width="31" height="40" fill="url(#pixelBgGlow)" />
+        )}
+        {Object.entries(PIXEL_GIRL_PATHS).map(([key, item]) => (
+          <path key={key} d={item.d} fill={item.color} />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
 interface PixelGirlProps {
   isBathing?: boolean;
   waterLevel?: number; // 0 to 100
   size?: number;
+  standalone?: boolean;
 }
 
-export function PixelGirl({ isBathing = false, waterLevel = 0, size = 120 }: PixelGirlProps) {
+/**
+ * PixelGirl component for Cabinet 01 "Pixel Bath".
+ * Renders the exact 1-to-1 pixel character from the uploaded photo,
+ * placed inside the Dreamio celestial cloud bath pavilion.
+ */
+export function PixelGirl({
+  isBathing = false,
+  waterLevel = 0,
+  size = 120,
+  standalone = false,
+}: PixelGirlProps) {
+  if (standalone) {
+    return <ExactPixelGirl size={size} />;
+  }
+
   return (
     <div
       className="relative flex flex-col items-center justify-end select-none"
       style={{ width: size, height: size * 1.15 }}
     >
-      {/* State 1: ANGRY before bathing (红色的 💢) */}
-      {!isBathing && (
-        <div className="absolute -top-7 right-3 pointer-events-none z-20 animate-bounce">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            {/* Pixel Angry Vein Mark 💢 */}
-            <path
-              d="M3 7 H8 V3 H10 V8 H3 Z"
-              fill="#e11d48"
-              stroke="#881337"
-              strokeWidth="1.2"
-            />
-            <path
-              d="M16 3 H14 V8 H21 V7 H16 Z"
-              fill="#e11d48"
-              stroke="#881337"
-              strokeWidth="1.2"
-            />
-            <path
-              d="M3 16 H8 V21 H10 V16 H3 Z"
-              fill="#e11d48"
-              stroke="#881337"
-              strokeWidth="1.2"
-            />
-            <path
-              d="M16 21 H14 V16 H21 V17 H16 Z"
-              fill="#e11d48"
-              stroke="#881337"
-              strokeWidth="1.2"
-            />
-            <circle cx="12" cy="12" r="2.5" fill="#e11d48" />
-          </svg>
-        </div>
-      )}
-
-      {/* State 2: HAPPY after bathing (微笑 + 像素泡泡) */}
+      {/* Victory Bathing Celebration (Bubbles + Heart floating gently) */}
       {isBathing && (
-        <div className="absolute -top-8 flex items-center gap-2 pointer-events-none z-20 animate-pulse">
-          {/* Pixel Bubbles */}
-          <span className="text-cyan-300 text-base drop-shadow-md">🫧</span>
-          <span className="text-pink-400 text-sm font-bold">♥</span>
-          <span className="text-cyan-200 text-lg drop-shadow-md">🫧</span>
+        <div className="absolute -top-9 flex items-center gap-2 pointer-events-none z-20 animate-bounce">
+          <span className="text-cyan-200 text-lg drop-shadow-[0_0_8px_#38bdf8]">🫧</span>
+          <span className="text-pink-300 text-sm font-black drop-shadow-[0_0_6px_#f472b6]">♥</span>
+          <span className="text-amber-200 text-base drop-shadow-[0_0_8px_#fde047]">✨</span>
+          <span className="text-cyan-200 text-xl drop-shadow-[0_0_8px_#38bdf8]">🫧</span>
         </div>
       )}
 
-      {/* Main Pixel Character matching uploaded photo */}
+      {/* Main SVG Scene: Exact Pixel Character (1:1 from uploaded photo) in Celestial Cloud Bath */}
       <svg
         viewBox="0 0 100 115"
-        className="w-full h-full drop-shadow-lg overflow-visible"
+        className="w-full h-full drop-shadow-xl overflow-visible"
         style={{ imageRendering: "pixelated" }}
+        shapeRendering="crispEdges"
       >
         <defs>
           <filter id="pixelDropShadow" x="-10%" y="-10%" width="120%" height="120%">
-            <feDropShadow dx="0" dy="2" stdDeviation="1" floodColor="#000" floodOpacity="0.25" />
+            <feDropShadow dx="0" dy="2" stdDeviation="1.5" floodColor="#180e29" floodOpacity="0.45" />
           </filter>
         </defs>
 
-        {/* ================= EXACT PIXEL CHARACTER (from uploaded photo) ================= */}
-        <g transform="translate(18, 2)">
-          {/* 1. HAIR BASE (Black/Dark charcoal rounded silhouette) */}
-          {/* Main Hair Volume */}
-          <path
-            d="M 12 18 C 12 4 48 4 48 18 C 58 18 64 26 64 38 C 64 50 56 56 52 58 L 52 48 L 48 48 L 48 42 L 12 42 L 12 48 L 8 48 C 8 52 4 48 4 38 C 4 26 8 18 12 18 Z"
-            fill="#262121"
-            stroke="#120e0e"
-            strokeWidth="2.4"
-          />
-
-          {/* Left Hair Bun / Ponytail Curl (Distinctive left bun from photo) */}
-          <g transform="translate(-4, 38)">
-            <ellipse cx="9" cy="12" rx="9" ry="9" fill="#262121" stroke="#120e0e" strokeWidth="2.2" />
-            {/* White/pink hair tie at the bun junction */}
-            <rect x="12" y="8" width="4" height="4" rx="1" fill="#fce4ec" stroke="#120e0e" strokeWidth="1" />
-            {/* Detached cute stray pixel strand sticking out left */}
-            <rect x="-3" y="4" width="3" height="3" fill="#120e0e" />
-          </g>
-
-          {/* Right Hair Side Tail Strand (bottom right curl from photo) */}
-          <path d="M 52 56 L 50 64 L 48 64" stroke="#120e0e" strokeWidth="2.2" strokeLinecap="square" fill="none" />
-
-          {/* 2. HAIR HIGHLIGHTS (Exact shapes from photo) */}
-          {/* Left Angular Highlight Shape */}
-          <path
-            d="M 14 16 L 22 16 L 22 22 L 18 22 L 18 20 L 14 20 Z"
-            fill="#ffffff"
-          />
-
-          {/* Right Dual Block Highlights (One tall block + one square block) */}
-          <rect x="42" y="16" width="7" height="8" rx="0.5" fill="#ffffff" />
-          <rect x="51" y="18" width="5" height="5" rx="0.5" fill="#ffffff" />
-
-          {/* 3. RED DIAGONAL HAIR CLIP on right side (Exact 3-4 red pixels from photo) */}
-          <g transform="translate(50, 28)">
-            <rect x="0" y="6" width="3" height="3" fill="#e11d48" />
-            <rect x="2.5" y="3.5" width="3" height="3" fill="#e11d48" />
-            <rect x="5" y="1" width="3" height="3" fill="#e11d48" />
-            <rect x="7.5" y="-1.5" width="3" height="3" fill="#e11d48" />
-          </g>
-
-          {/* 4. FACE & EARS */}
-          {/* Tiny ear tabs on left and right */}
-          <rect x="9" y="38" width="4" height="6" rx="1" fill="#fff5f0" stroke="#262121" strokeWidth="1.2" />
-          <rect x="50" y="38" width="4" height="6" rx="1" fill="#fff5f0" stroke="#262121" strokeWidth="1.2" />
-
-          {/* Fair Skin Face Rectangle */}
-          <rect x="13" y="30" width="38" height="28" rx="4" fill="#fff6f2" stroke="#262121" strokeWidth="2.2" />
-
-          {/* Straight-across dark bangs bottom edge */}
-          <path
-            d="M 13 32 L 20 32 L 22 36 L 36 36 L 38 32 L 50 32 L 50 30 L 13 30 Z"
-            fill="#262121"
-          />
-
-          {/* Soft Pink Blush on Cheeks (Rectangular pixel blush from photo) */}
-          <rect x="15" y="44" width="7" height="4" rx="1" fill="#fbb6ce" opacity="0.85" />
-          <rect x="41" y="44" width="7" height="4" rx="1" fill="#fbb6ce" opacity="0.85" />
-
-          {/* EYES & MOUTH based on state */}
-          {!isBathing ? (
-            /* ANGRY STATE: Furrowed grumpy pixel eyes & pouty mouth */
-            <g>
-              {/* Left Eye: Angry slanted square */}
-              <rect x="18" y="37" width="5" height="6" fill="#3a2e2e" />
-              <line x1="16" y1="35" x2="24" y2="38" stroke="#262121" strokeWidth="2" strokeLinecap="square" />
-
-              {/* Right Eye: Angry slanted square */}
-              <rect x="40" y="37" width="5" height="6" fill="#3a2e2e" />
-              <line x1="47" y1="35" x2="39" y2="38" stroke="#262121" strokeWidth="2" strokeLinecap="square" />
-
-              {/* Pouting grumpy mouth */}
-              <rect x="30" y="47" width="3" height="3" fill="#b97a7a" />
-            </g>
-          ) : (
-            /* HAPPY STATE: Smiling curved crescent eyes (^ ^) & happy smile */
-            <g>
-              {/* Left Smiling Eye */}
-              <path d="M 17 40 Q 21 35 24 40" stroke="#262121" strokeWidth="2.5" strokeLinecap="square" fill="none" />
-              {/* Right Smiling Eye */}
-              <path d="M 39 40 Q 43 35 46 40" stroke="#262121" strokeWidth="2.5" strokeLinecap="square" fill="none" />
-              {/* Happy Open Smiling Mouth */}
-              <rect x="29" y="46" width="6" height="4" rx="2" fill="#e11d48" />
-              <rect x="30.5" y="46.5" width="3" height="1.5" fill="#ffffff" />
-            </g>
-          )}
-
-          {/* 5. BODY & OUTFIT (White shirt, Necklace, Crossbody strap, Polka-dot pants) */}
-          <g transform="translate(13, 56)">
-            {/* White Shirt Torso */}
-            <rect x="6" y="0" width="26" height="15" fill="#ffffff" stroke="#262121" strokeWidth="1.8" />
-            {/* Arms */}
-            <rect x="0" y="2" width="6" height="9" rx="2" fill="#fff6f2" stroke="#262121" strokeWidth="1.4" />
-            <rect x="32" y="2" width="6" height="9" rx="2" fill="#fff6f2" stroke="#262121" strokeWidth="1.4" />
-
-            {/* Silver Square Pendant Necklace (from photo) */}
-            <path d="M 17 0 L 19 5 L 21 0" stroke="#718096" strokeWidth="1.2" fill="none" />
-            <rect x="17" y="5" width="5" height="6" rx="0.5" fill="#718096" stroke="#262121" strokeWidth="1" />
-            <rect x="18.5" y="6.5" width="2" height="3" fill="#ffffff" />
-
-            {/* Brown Crossbody Strap & Purse (from photo) */}
-            <line x1="12" y1="0" x2="11" y2="15" stroke="#5d4037" strokeWidth="2.2" strokeLinecap="square" />
-            <rect x="8" y="11" width="7" height="6" rx="1" fill="#5d4037" stroke="#3e2723" strokeWidth="1.2" />
-
-            {/* Navy Blue Pants with White Polka-Dots (from photo) */}
-            <rect x="10" y="15" width="18" height="16" fill="#1e3a8a" stroke="#262121" strokeWidth="1.8" />
-            {/* Pant seam */}
-            <line x1="19" y1="21" x2="19" y2="31" stroke="#262121" strokeWidth="1.5" />
-            {/* White Polka-dots */}
-            <rect x="12" y="18" width="2.5" height="2.5" fill="#ffffff" />
-            <rect x="16" y="22" width="2.5" height="2.5" fill="#ffffff" />
-            <rect x="12" y="26" width="2.5" height="2.5" fill="#ffffff" />
-            <rect x="23" y="18" width="2.5" height="2.5" fill="#ffffff" />
-            <rect x="20" y="25" width="2.5" height="2.5" fill="#ffffff" />
-            <rect x="24" y="26" width="2.5" height="2.5" fill="#ffffff" />
-
-            {/* Shoes/Feet */}
-            <rect x="13" y="31" width="5" height="3" fill="#ffffff" stroke="#262121" strokeWidth="1" />
-            <rect x="21" y="31" width="5" height="3" fill="#ffffff" stroke="#262121" strokeWidth="1" />
-          </g>
+        {/* ================= EXACT 1:1 PIXEL CHARACTER ================= */}
+        {/*
+          Width: 31px * 2 = 62px. Height: 40px * 2 = 80px.
+          Position: x = 19 (centered in 100px wide viewBox), y = 2.
+          Feet land right at y = 82 (the floor of the cloud bath).
+        */}
+        <g transform="translate(19, 2) scale(2)">
+          {Object.entries(PIXEL_GIRL_PATHS).map(([key, item]) => (
+            <path key={key} d={item.d} fill={item.color} />
+          ))}
         </g>
 
-        {/* ================= STARDEW WOODEN CEDAR ONEN / TUB ================= */}
+        {/* ================= DREAMIO CELESTIAL CLOUD HOT SPRING BATH ================= */}
         <g transform="translate(6, 72)">
-          {/* Tub Back wall */}
-          <rect x="6" y="2" width="76" height="36" rx="8" fill="#8d5b32" stroke="#331908" strokeWidth="3" />
+          {/* 1. Underlying Soft Floating Cloud Base Cushion */}
+          <g fill="#ffffff" opacity="0.95">
+            <circle cx="10" cy="38" r="9" />
+            <circle cx="26" cy="40" r="10" />
+            <circle cx="44" cy="41" r="10.5" />
+            <circle cx="62" cy="40" r="10" />
+            <circle cx="78" cy="38" r="9" />
+            {/* Soft pink/lavender cloud shading underbelly */}
+            <ellipse cx="44" cy="44" rx="42" ry="4" fill="#c4b5fd" opacity="0.5" />
+          </g>
 
-          {/* Water inside tub */}
+          {/* 2. Tub Back wall (Warm Cedar & Moonstone Inlay) */}
+          <rect x="6" y="2" width="76" height="36" rx="8" fill="#6d4830" stroke="#2a1608" strokeWidth="2.5" />
+
+          {/* 3. Water inside tub (Shimmering Starlight Cyan) */}
           <rect
             x="8"
             y={24 - (waterLevel / 100) * 16}
@@ -206,7 +211,7 @@ export function PixelGirl({ isBathing = false, waterLevel = 0, size = 120 }: Pix
             height={14 + (waterLevel / 100) * 16}
             rx="4"
             fill="#38bdf8"
-            opacity="0.9"
+            opacity="0.92"
           />
           {/* Water reflection ripples */}
           <line
@@ -217,35 +222,69 @@ export function PixelGirl({ isBathing = false, waterLevel = 0, size = 120 }: Pix
             stroke="#ffffff"
             strokeWidth="2"
             strokeLinecap="round"
-            opacity="0.8"
+            opacity="0.85"
+          />
+          <line
+            x1="48"
+            y1={27 - (waterLevel / 100) * 16}
+            x2="58"
+            y2={27 - (waterLevel / 100) * 16}
+            stroke="#e0f2fe"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            opacity="0.75"
           />
 
-          {/* Tub Front Wooden Planks */}
-          <rect x="4" y="10" width="80" height="30" rx="6" fill="#a46d3e" stroke="#331908" strokeWidth="3" />
+          {/* 4. Tub Front Wooden Planks (Warm palace terrace woodwork) */}
+          <rect x="4" y="10" width="80" height="28" rx="6" fill="#8c5832" stroke="#2a1608" strokeWidth="2.5" />
           {/* Vertical wood grain grooves */}
-          <line x1="24" y1="10" x2="24" y2="40" stroke="#78471c" strokeWidth="2" />
-          <line x1="44" y1="10" x2="44" y2="40" stroke="#78471c" strokeWidth="2" />
-          <line x1="64" y1="10" x2="64" y2="40" stroke="#78471c" strokeWidth="2" />
+          <line x1="24" y1="10" x2="24" y2="38" stroke="#5c3518" strokeWidth="1.8" />
+          <line x1="44" y1="10" x2="44" y2="38" stroke="#5c3518" strokeWidth="1.8" />
+          <line x1="64" y1="10" x2="64" y2="38" stroke="#5c3518" strokeWidth="1.8" />
 
-          {/* Golden Brass Tub Ring Bands */}
-          <rect x="3" y="16" width="82" height="4" fill="#f1c40f" stroke="#331908" strokeWidth="1.8" />
-          <rect x="3" y="30" width="82" height="4" fill="#f1c40f" stroke="#331908" strokeWidth="1.8" />
+          {/* Golden Palace Brass Ring Bands */}
+          <rect x="3" y="15" width="82" height="3.5" fill="#f59e0b" stroke="#78350f" strokeWidth="1.2" />
+          <rect x="3" y="28" width="82" height="3.5" fill="#f59e0b" stroke="#78350f" strokeWidth="1.2" />
 
-          {/* Cute Yellow Rubber Duck floating in tub */}
-          <g transform={`translate(60, ${12 - (waterLevel / 100) * 6})`}>
-            <ellipse cx="6" cy="6" rx="6" ry="4" fill="#f39c12" stroke="#331908" strokeWidth="1.2" />
-            <circle cx="8" cy="3" r="3.5" fill="#f1c40f" stroke="#331908" strokeWidth="1.2" />
-            <polygon points="11,3 14,4 11,5" fill="#e67e22" />
-            <circle cx="9" cy="2.5" r="0.6" fill="#000" />
+          {/* 5. Terrace Hydrangea Flowers on Tub corners (matching uploaded sky city) */}
+          {/* Left Flower Cluster (Pink & Periwinkle) */}
+          <g transform="translate(1, 14)">
+            <circle cx="2" cy="0" r="3" fill="#f472b6" />
+            <circle cx="6" cy="-2" r="3" fill="#c084fc" />
+            <circle cx="0" cy="4" r="2.5" fill="#f472b6" />
+            <circle cx="5" cy="3" r="2.5" fill="#60a5fa" />
+            <circle cx="3" cy="1" r="1.2" fill="#fef08a" />
           </g>
 
-          {/* Soap Bubbles rising when bathing */}
+          {/* Right Flower Cluster & Mini Fairy Lantern */}
+          <g transform="translate(76, 12)">
+            <circle cx="3" cy="0" r="3" fill="#f472b6" />
+            <circle cx="6" cy="4" r="2.8" fill="#60a5fa" />
+            <circle cx="1" cy="4" r="2.5" fill="#c084fc" />
+            <circle cx="3" cy="2" r="1.2" fill="#fef08a" />
+            {/* Glowing fairy lantern on right post */}
+            <rect x="5" y="-10" width="6" height="8" rx="2" fill="#fef08a" stroke="#78350f" strokeWidth="1" />
+            <polygon points="8,-13 4,-10 12,-10" fill="#b45309" />
+          </g>
+
+          {/* 6. Cute Yellow Rubber Duck floating in tub */}
+          <g transform={`translate(58, ${12 - (waterLevel / 100) * 6})`}>
+            <ellipse cx="6" cy="6" rx="6" ry="4" fill="#fbbf24" stroke="#78350f" strokeWidth="1.2" />
+            <circle cx="8" cy="3" r="3.5" fill="#fde047" stroke="#78350f" strokeWidth="1.2" />
+            <polygon points="11,3 14,4 11,5" fill="#ea580c" />
+            <circle cx="9" cy="2.5" r="0.7" fill="#000" />
+            {/* Tiny star sparkle on duck */}
+            <circle cx="3" cy="4" r="0.8" fill="#ffffff" />
+          </g>
+
+          {/* 7. Soap Bubbles rising when bathing */}
           {isBathing && (
-            <g fill="#ffffff" stroke="#38bdf8" strokeWidth="1.2">
+            <g fill="#ffffff" stroke="#67e8f9" strokeWidth="1.2">
               <circle cx="16" cy="8" r="3.5" />
               <circle cx="21" cy="5" r="2.5" />
               <circle cx="28" cy="9" r="3" />
               <circle cx="48" cy="7" r="2.5" />
+              <circle cx="38" cy="4" r="2" />
             </g>
           )}
         </g>
