@@ -1,17 +1,36 @@
 # 🌙 Dreamio Cloud Bath - ChatGPT Code Interpreter Guide
 
+## Updated standalone edition
+
+`pixel-cloud-bath.html` and `public/pixel-cloud-bath.html` are identical, zero-dependency releases of the updated eight-level game. The React components under `src/components/pixel-bath/` have not yet been updated to match this standalone edition.
+
+The standalone game includes English UI, eight pixel-art themes, different bath positions, relay pools with Release/Close valves, collectible diamonds and ducks, a score counter, temporary Star Water ×2, pollution traps, and persistent bubble-bath celebrations without an automatic results popup.
+
+### How to test this edition
+
+1. Open `pixel-cloud-bath.html` directly in a browser, or run `npm run dev` and visit `/pixel-cloud-bath.html`.
+2. Select levels 01–08. Check their themes and bath positions: level 01 is bottom-center, 02 bottom-right, and 03 upper-left.
+3. Drag to dig the cloud plug beneath the source. Water should collect in a relay pool and remain there while its valve is closed.
+4. Dig along the dotted downhill chute, then click **Release**. On levels with two pools, repeat this at the second pool to reach the bath; **Close** should stop further release.
+5. Collect a diamond (+100) or duck (+150) by clicking or digging nearby. Check the floating score, star burst, and **Star water ×2** indicator. Collecting the same item again must not award more points. Sparkling clean drops count twice toward the bath target.
+6. Fill the bath with clean water. The girl should smile, stars and bubbles should animate, and the scene should remain visible until **Next level** is clicked.
+7. Dig into a poop/trash trap. Water should become dirty, the girl should become angry, and star bonuses must not clear pollution or complete the level. **Try again** should reset the score, pools, collectibles, and pollution.
+8. Resize to desktop, portrait phone, and short landscape sizes. Keep the bath and pool controls visible and verify water still travels downhill to the destination.
+
+---
+
 本指南专为 **ChatGPT Code Interpreter (Advanced Data Analysis)** 定制。无论您是在网页端把文件/压缩包上传给 ChatGPT，还是让它编写 Python 脚本自动批量修改，都能立刻生效并直接运行验证。
 
 ---
 
 ## 📁 核心文件结构
 
-本压缩包包含两套完全同步的代码形态：
+本压缩包包含单文件发布版和 React 原版；功能差异请以上方 Updated standalone edition 说明为准：
 
 ### 1. 🌟 `pixel-cloud-bath.html`（极力推荐：ChatGPT 最擅长修改的形态）
 - **特点**：**单文件、零依赖、纯原生 HTML5/JS/Canvas/WebAudio**。
 - **为什么推荐 ChatGPT 改这个**：ChatGPT Code Interpreter 运行在独立的沙盒中，无法启动 Node.js 服务器预览。但对于单文件 HTML，**ChatGPT 可以直接读取、用 Python 修改里面的任何参数/关卡/物理引擎/美术，然后生成新的 HTML 文件供您一键下载双击打开**！
-- **完全等同于 Next.js 版本**：包含 1:1 像素小人、梦幻天空城全屏画风、彩色云朵挖掘、水流模拟、小黄鸭收集以及胜利判定。
+- **原始功能基础**：包含 1:1 像素小人、梦幻天空城全屏画风、彩色云朵挖掘、水流模拟、小黄鸭收集以及胜利判定。
 
 ### 2. ⚛️ `src/components/pixel-bath/`（Next.js React 原版组件库）
 - 如果您希望将 ChatGPT 修改好的逻辑同步回 Arcade 网站工程，相关模块为：
