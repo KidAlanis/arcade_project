@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
 
-const config: NextConfig = {
-  // Certificate paths are runtime inputs. Include only the public CA files,
-  // rather than making dynamic fs reads watch the entire workspace in dev.
+const nextConfig: NextConfig = {
+  devIndicators: false,
+  // Preserve main's public CA files for runtime database TLS configuration.
   outputFileTracingIncludes: {
     "/*": ["./certs/*.crt", "./certs/*.cer", "./certs/*.pem"],
   },
 };
-export default config;
+
+export default nextConfig;

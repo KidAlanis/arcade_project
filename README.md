@@ -1,8 +1,8 @@
 > **Current status (2026-11-06):** migrations 004–006 are applied and connected player-flow tests passed. Earlier pending/blocker notes below are historical. See [verified results](docs/PLAYER_FLOW_VERIFIED.md). Game win validation remains a known limitation.
 
-# Neon Quarter
+# Dreamio
 
-A collaborative Next.js arcade with a shared game registry, Better Auth email/password accounts, one Postgres ticket wallet per player, and a prize shop/shelf. Games remain Coming soon; no prizes are seeded.
+A collaborative pixel-art Next.js arcade with a cinematic castle journey, two-character fitting room, shared game registry, Better Auth accounts, one Postgres ticket wallet per player, and a clothing shop/prize shelf. Main's Pixel Bath, Clawpop and connected player features are preserved.
 
 ```sh
 npm install
@@ -10,6 +10,28 @@ npm run dev
 ```
 
 Requires Node.js 22.15 or newer. Open http://localhost:3000. Run `npm test`, `npm run typecheck`, and `npm run build` for local checks.
+
+## Castle journey and fitting room
+
+- `/` — borderless Dreamio title screen. PRESS START opens `/welcome`; direct wardrobe and account links remain available.
+- `/welcome` — a paused day/night castle video scrubbed through a visible slider or a horizontal sky drag. Name, optional gender and time of day are cosmetic browser preferences; saving them opens `/intro` and does not create an account or change tickets.
+- `/intro` — three 2672×1792 HD castle shots at 1.2× speed. Click the scene or press Space to start/advance; another action while playing skips ahead. Natural shot endings hold until the next action. The last shot stays on its final interior frame while overlays fade out over 1.8 seconds.
+- The final scene's right-hand curtain-and-clothes room keeps its original side perspective. Hover/focus adds a subtle gold halo and enlargement; click/Enter opens the protected `/wardrobe` route. See [map assets](public/art/map/README.md) and [video source matching](public/video/README.md).
+- `/wardrobe` — full-screen blue pixel interface, left category rail, night-street stage and right portrait/style/item panels. SWITCH CHARACTER changes between **Midnight Wings** and **Leather & Lace**, keeping each outfit.
+- Midnight Wings has dress colors and optional wings, tights, cat ears and cuffs. Leather & Lace has optional jacket, bag, headband and earrings, three lace dress colors and matching black boots. Both use coherent full-body sprites with no independently stretched legs.
+
+The shared wallet from main remains server-authoritative. Onboarding preferences use `dreamio-setup-profile-v1`; only cosmetic fields are migrated from the legacy browser profile, never balances, ownership or account identity. The two photo-character outfits remain local styling previews under `dreamio-photo-character-v1` and `dreamio-street-character-v1`, separate from main's server-saved shop avatar. Arbitrary purchased items are not automatically fitted to these detailed characters.
+
+Photo Studio is a local in-memory file preview. It does not upload images or automatically generate a character. Original personal photographs are not included in the site. Generated sprites, prompts, registered item exports and screenshots are included; see [Midnight Wings](public/art/character/README.md), [Leather & Lace](public/art/character/STREET-CHARACTER.md) and the [transcribed generation brief](docs/avatar-generation-prompt.zh-CN.md). Run `node --import tsx scripts/export-street-character.ts` to recreate the six transparent item cutouts.
+
+### Manual checks
+
+1. Open `/` → PRESS START. Drag the sky in both directions and use the slider/keyboard to test day, midpoint and night; the video must stay paused and never loop.
+2. Enter a name, choose an optional gender, and begin. Click/Space through the three shots; verify natural endings hold and the last frame remains after the text fades.
+3. Hover/focus the right-hand fitting-room entrance and open it. Existing authentication requirements still apply; use a configured account to test the protected wardrobe.
+4. Change an outfit, use SWITCH CHARACTER twice, then reload. Confirm both characters keep their own choices. Check the jacket/accessory switches and dress colors without skin/boot tinting or broken leg proportions.
+5. Preview a JPG/PNG/WebP in Photo Studio, then remove/close it. Confirm this does not imply a server upload or generation.
+6. With the configured account, regression-test the existing game lobby, shop, wallet and sign-out. Do not reapply already-applied migrations. Offline checks do not establish database connectivity or validate live purchases.
 
 ## Database and authentication setup
 

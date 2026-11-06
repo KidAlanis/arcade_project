@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 export function Footer() {
   const pathname = usePathname();
-  if (pathname === "/") return null;
+  if (pathname === "/" || pathname === "/wardrobe" || pathname === "/welcome" || pathname === "/intro") return null;
   return (
     <footer>
       <Link href="/" className="footer-brand">

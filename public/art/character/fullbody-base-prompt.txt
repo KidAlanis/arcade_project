@@ -1,0 +1,8 @@
+Tool: built-in image_gen
+Source: fullbody-boots.png
+
+Use case: precise-object-edit. Edit target is the supplied FULL-BODY transparent pixel-art character. Create the COVERED BASE version for a layered dress-up game.
+Keep the entire full-body sprite in EXACTLY the same canvas placement, scale, head/body proportions, face, black hairstyle, selfie phone pose, arms, hands, legs and black lace-up boots. Canvas 887x1774, character's ears/head near y45, boots finish near y1740. Do not crop, resize, change the pose, or shorten the legs.
+Remove ONLY the detachable costume elements: the black feather wings, cat-ear headband, silver wrist cuff and fishnet tights. Replace the black corset-and-skirt dress with a modest opaque fitted lavender high-neck sleeveless unitard with fitted shorts ending at the upper thighs. The outfit must fully cover the torso and hips. Reconstruct the continuous bare legs where the fishnet was removed, joining naturally to the existing boot cuffs. Keep both boots entirely intact and identical. Restore the ordinary underlying hair outline under the removed cat ears and the bare wrist under the removed cuff. Do not add other accessories.
+Match the original fine pixel art exactly: tiny discrete square pixels, stepped dark outlines, muted lavender and charcoal shading, early handheld dress-up-game sprite texture. No photorealism, no 3D, no smooth modern anime painting. Transparent outside the character. No text, no scenery, no background.
+This is a registered base UNDERLAY; exact alignment to the input is the highest priority.

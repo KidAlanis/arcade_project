@@ -1,6 +1,7 @@
 import { updateBalance } from "./wallet";
 
-export type Category = "top" | "bottom" | "shoes" | "accessory";
+export type Category =
+  "top" | "bottom" | "dress" | "shoes" | "bag" | "accessory";
 export type Item = {
   id: string;
   name: string;
@@ -14,10 +15,31 @@ export type Item = {
 export const categories: { id: Category; label: string; icon: string }[] = [
   { id: "top", label: "Tops", icon: "shirt" },
   { id: "bottom", label: "Bottoms", icon: "pants" },
+  { id: "dress", label: "Dresses", icon: "dress" },
   { id: "shoes", label: "Shoes", icon: "shoe" },
+  { id: "bag", label: "Bags", icon: "bag" },
   { id: "accessory", label: "Accessories", icon: "bow" },
 ];
 export const items: Item[] = [
+  {
+    id: "dress-midnight",
+    name: "Midnight Ribbon Dress",
+    category: "dress",
+    color: "#8b8fd1",
+    dark: "#555d9e",
+    price: 25,
+    style: "dress",
+    tag: "NEW",
+  },
+  {
+    id: "bag-lavender",
+    name: "Lilac Mini Bag",
+    category: "bag",
+    color: "#b4a0dc",
+    dark: "#7364a8",
+    price: 15,
+    tag: "NEW",
+  },
   {
     id: "top-white",
     name: "Cloud Nine Tee",
@@ -125,15 +147,21 @@ export const items: Item[] = [
   },
 ];
 export type Look = Record<Category, string>;
+export const genders = ["unspecified", "female", "male", "nonbinary"] as const;
+export type Gender = (typeof genders)[number];
 export const defaultLook: Look = {
   top: "top-white",
   bottom: "bottom-blue",
   shoes: "shoes-white",
   accessory: "",
+  dress: "",
+  bag: "",
 };
 export type DreamState = {
   version: 1;
   nickname: string;
+  gender: Gender;
+  daylight: number;
   tickets: number;
   owned: string[];
   look: Look;
@@ -148,6 +176,8 @@ export function initialDream(): DreamState {
   return {
     version: 1,
     nickname: "",
+    gender: "unspecified",
+    daylight: 0,
     tickets: 0,
     owned: items.filter((i) => i.price === 0).map((i) => i.id),
     look: { ...defaultLook },
@@ -161,6 +191,15 @@ export function initialDream(): DreamState {
 }
 export function localDay(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+export function saveProfile(
+  state: DreamState,
+  nickname: string,
+  gender: Gender,
+  daylight: number,
+): DreamState | null {
+  if (!nickname.trim() || !genders.includes(gender) || !Number.isFinite(daylight)) return null;
+  return { ...state, nickname: nickname.trim().slice(0, 16), gender, daylight: Math.max(0, Math.min(100, daylight)) };
 }
 export function claimDaily(
   state: DreamState,
@@ -189,11 +228,27 @@ export function buyItem(state: DreamState, id: string): DreamState | null {
     ? null
     : { ...state, tickets, owned: [...state.owned, id] };
 }
-export function equipItem(state: DreamState, id: string): DreamState | null {
-  if (id === "") return { ...state, look: { ...state.look, accessory: "" } };
+export function equipItem(
+  state: DreamState,
+  id: string,
+  slot: Category = "accessory",
+): DreamState | null {
+  if (id === "")
+    return ["dress", "bag", "accessory"].includes(slot)
+      ? { ...state, look: { ...state.look, [slot]: "" } }
+      : null;
   const item = items.find((i) => i.id === id);
   return item && state.owned.includes(id)
-    ? { ...state, look: { ...state.look, [item.category]: id } }
+    ? {
+        ...state,
+        look: {
+          ...state.look,
+          ...(item.category === "top" || item.category === "bottom"
+            ? { dress: "" }
+            : {}),
+          [item.category]: id,
+        },
+      }
     : null;
 }
 export function finishGame(
@@ -256,6 +311,9 @@ export function restoreDream(raw: string): DreamState {
     }
     return {
       ...base,
+      gender: genders.includes(data.gender) ? data.gender : base.gender,
+      daylight: typeof data.daylight === "number" && Number.isFinite(data.daylight)
+        ? Math.max(0, Math.min(100, data.daylight)) : base.daylight,
       nickname:
         typeof data.nickname === "string"
           ? data.nickname.trim().slice(0, 16)
