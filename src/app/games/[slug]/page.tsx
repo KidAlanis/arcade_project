@@ -1,3 +1,5 @@
+import { PlayerUnavailable } from "@/components/player-unavailable";
+import { pageAccess } from "@/lib/server/session";
 import { notFound } from "next/navigation";
 import { games } from "@/lib/games";
 import { ArcadeGame } from "@/components/arcade-game";
@@ -12,5 +14,7 @@ export default async function GamePage({
   const { slug } = await params;
   const game = games.find((game) => game.slug === slug);
   if (!game) notFound();
+  const unavailable = await pageAccess(`/games/${slug}`);
+  if (unavailable) return <PlayerUnavailable message={unavailable} />;
   return <ArcadeGame game={game} />;
 }

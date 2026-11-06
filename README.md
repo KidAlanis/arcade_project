@@ -1,48 +1,40 @@
-# Dreamio
+# Neon Quarter
 
-A cozy pixel browser arcade built with Next.js App Router. The site is in English and starts on a borderless, full-screen pixel-art title screen.
-
-## Run locally
+A collaborative Next.js arcade with a shared game registry, Better Auth email/password accounts, one Postgres ticket wallet per player, and a prize shop/shelf. Games remain Coming soon; no prizes are seeded.
 
 ```sh
 npm install
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). Validate with `npm test`, `npm run typecheck`, and `npm run build`.
+Requires Node.js 22.15 or newer. Open http://localhost:3000. Run `npm test`, `npm run typecheck`, and `npm run build` for local checks.
 
-## Pages
+## Database and authentication setup
 
-- `/` — title screen with nickname entry and guest access.
-- `/lobby` — searchable game catalog, categories, daily check-in, and links to the closet and shop.
-- `/games/game-1` — Cloud Memory, a 6-pair matching demo.
-- `/games/game-2` — Star Collector, a 15-second collection demo.
-- `/games/game-3` — Heartbeat Club, a reaction-time demo.
-- `/wardrobe` — live pixel-avatar dressing room, hair and skin choices, owned clothing, and a local photo-preview area.
-- `/shop` — clothing and accessories purchased with earned Dream Points.
+Read [AUTH_AND_PLAYER_DATA.md](docs/AUTH_AND_PLAYER_DATA.md) for the environment setup, schema inspection, reviewed migration commands, wallet API, and teammate integration instructions.
 
-## Prototype boundaries
+Put credentials in ignored `.env.local` using `.env.example` as a reference. Generate BETTER_AUTH_SECRET with `openssl rand -base64 32`. Keep DATABASE_URL server-only. The runtime now supports the Supabase transaction pooler with verified TLS and a default one-connection pool; configure DATABASE_SSL_CA_FILE with the Supabase server root certificate if needed. With no database connection, the home page works and account features show an explicit setup message.
 
-Nickname entry is a **local demo profile**, not authenticated sign-in. There are no passwords, accounts, database, server-side sessions, or cross-device synchronization. Nicknames, points, inventory, outfits, check-in streaks, and game bests are stored under `dreamio-world-v1` in this browser's localStorage. Signing out clears the nickname but retains this device's progress. Guest play is supported; earning rewards and buying items requires a local nickname.
+**Database setup is applied and verified (2026-10-30).** The authenticated `supabase-arcade` MCP targets project `jiaaqwdujaclbxulndjc`, verified against the local pg connection. Three migrations created the nine private auth/player tables and tightened trigger permissions. No original data was reset or deleted. `npm run db:migrate` remains plan-only; do not reapply existing migrations. Live migration versions and local checksums are recorded in `db/migrations/applied.json`.
 
-Photo selection only previews the file in memory. It is not uploaded, persisted, or turned into an AI avatar. The page states that generation is not connected yet. Production photo-to-avatar generation needs a server endpoint, image-generation service, and private file storage. Do not place API secrets in client code.
+See [migration verification report](docs/MIGRATION_REVIEW.md) for actual schema/RLS, integration tests, retained test fixtures, and remaining game-validation limitations. All placeholder game rewards remain disabled; the shop currently has no active prizes.
 
-These points are prototype data and can be edited in browser storage. Production accounts and purchases must validate rewards and transactions on the server.
+## Shared pieces
 
-## Reward rules
+- `src/lib/games.ts` — shared game registry; keep game slugs stable.
+- `src/app/page.tsx` — public arcade floor and game list.
+- `src/app/games/[slug]/page.tsx` — protected Coming soon game pages; unknown slugs return 404. Dedicated game pages added by teammates must also check the session on the server.
+- `src/lib/auth.ts` and `src/lib/server/db.ts` — server auth and shared `pg.Pool`.
+- `src/app/api/auth/[...all]/route.ts` — Better Auth handler.
+- `src/components/ticket-wallet.tsx` — the shared `useTicketWallet()` hook. Uses authenticated APIs; no client-authoritative balance.
+- `src/lib/server/player-data.ts` — session-checked wallet, reward, and atomic redemption helpers.
+- `src/lib/server/game-rewards.ts` — server reward rules, currently disabled until real game validation exists.
+- `src/components/header.tsx` — player name, live balance, sign in/out.
+- `src/app/shop/page.tsx` and `src/app/shelf/page.tsx` — protected catalog and personal prizes.
+- `src/app/globals.css` — existing dark/neon design and account styles.
 
-- Daily check-in: 20 points, once per device-local calendar day.
-- Every seventh consecutive check-in: an extra 50 points (70 that day).
-- First successful completion of each game each day: 10 points.
-- Replays can improve the personal best without granting the same day's reward again.
-- Clothing is bought once and can be equipped without further cost.
+Client integration uses `earnTickets(serverVerifiedResultId)` and `redeemPrize(prizeId, requestId)`; arbitrary `addTickets(amount)` / `spendTickets(amount)` are no longer available. See the full guide before adding a game's reward endpoint.
 
-## Working together
+## Integration with latest main (PR merge)
 
-`src/lib/games.ts` is the shared game registry. Keep existing slugs stable. The three games are clearly labeled playable demos and can be replaced with the team's own games. A dedicated route such as `src/app/games/game-1/page.tsx` can replace its dynamic-route demo without changing its catalog URL. Add game-specific code in a separate component or directory.
-
-`src/components/ticket-wallet.tsx` provides the shared context. Existing game integrations can continue using `useTicketWallet().addTickets()` and `.spendTickets()`. Use `.completeGame(slug, score)` to apply the once-daily demo-game reward and personal-best logic. Register new reward slugs in `src/lib/dreamio.ts` when introducing a new game.
-
-`src/lib/dreamio.ts` holds catalog items, default appearance, check-in calculations, purchases, outfit changes, and storage validation. Logic tests are in `src/lib/dreamio.test.ts`. `src/components/pixel-art.tsx` holds code-native pixel icons, clothing art, and the customizable base avatar.
-
-The sky-city background is generated with the built-in imagegen tool. Its exact prompt and asset details are in [public/art/README.md](public/art/README.md).
+Main now includes Dreamio, Pixel Bath and Clawpop. Their game source is preserved and dedicated game pages require sign-in. The shared wallet is still server-authoritative. A compatibility adapter keeps the new UI compiling but deliberately rejects legacy arbitrary add/spend, daily rewards, score rewards and client-only purchases. Legacy wardrobe equip/appearance currently return defaults/no-op; durable cosmetics and validated game rewards need follow-up integration. The shop route uses the secure Postgres catalog. No legacy localStorage balance is imported. Earlier connected tests predate this merge; the merged tree passes 17 tests and production build but requires browser regression testing of the new Dreamio UI.

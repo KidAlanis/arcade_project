@@ -1,0 +1,25 @@
+{
+  "projectRef": "jiaaqwdujaclbxulndjc",
+  "appliedVia": "supabase-arcade MCP apply_migration",
+  "verifiedOn": "2026-10-30",
+  "migrations": [
+    {
+      "version": "20261030163804",
+      "name": "arcade_001_better_auth",
+      "file": "001_better_auth.sql",
+      "sha256": "e6cb924b3929ecce04071f7a6e599ae925e5f09651106eeec0c2a0da97858937"
+    },
+    {
+      "version": "20261030163809",
+      "name": "arcade_002_player_data",
+      "file": "002_player_data.sql",
+      "sha256": "0c2012845559fd7211d2e538d702267d3c065ef69ff25b3a62c8f6613975b48a"
+    },
+    {
+      "version": "20261030164026",
+      "name": "arcade_003_private_trigger_permissions",
+      "file": "003_private_trigger_permissions.sql",
+      "sha256": "72753603b2f01ab530b8456947838b823615ae1091893db007934a484a84e740"
+    }
+  ]
+}

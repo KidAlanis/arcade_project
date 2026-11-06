@@ -32,4 +32,15 @@ export const games = [
     description: "Wait for green. Follow your heartbeat.",
     engine: "reaction",
   },
+  {
+    slug: "clawpop",
+    name: "Clawpop",
+    english: "CLAWPOP ARCADE",
+    number: "04",
+    color: "pink",
+    symbol: "star",
+    category: "Casual",
+    description: "Drop the claw. Catch cute round plushies in a retro Japanese crane game!",
+    engine: "clawpop",
+  },
 ] as const;
