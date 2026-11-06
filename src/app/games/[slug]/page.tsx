@@ -1,3 +1,4 @@
+import { GameTicketGate } from "@/components/game-ticket-gate";
 import { PlayerUnavailable } from "@/components/player-unavailable";
 import { pageAccess } from "@/lib/server/session";
 import { notFound } from "next/navigation";
@@ -16,5 +17,5 @@ export default async function GamePage({
   if (!game) notFound();
   const unavailable = await pageAccess(`/games/${slug}`);
   if (unavailable) return <PlayerUnavailable message={unavailable} />;
-  return <ArcadeGame game={game} />;
+  return <GameTicketGate gameId={game.slug}><ArcadeGame game={game} /></GameTicketGate>;
 }

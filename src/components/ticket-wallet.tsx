@@ -18,6 +18,11 @@ import type {
 } from "@/lib/player-contract";
 
 type Wallet = {
+  owned?: string[];
+  look?: import("@/lib/dreamio").Look;
+  hair?: number;
+  skin?: number;
+  updateAvatar: (input: object) => Promise<MutationResult>;
   user: Player | null;
   tickets: number | null;
   shelf: Redemption[];
@@ -27,6 +32,7 @@ type Wallet = {
   refresh: () => Promise<void>;
   clearAccount: () => void;
   earnTickets: (resultId: string) => Promise<MutationResult>;
+  claimTickets: (kind: "rescue" | "daily", requestId: string) => Promise<MutationResult>;
   redeemPrize: (prizeId: string, requestId: string) => Promise<MutationResult>;
 };
 const TicketContext = createContext<Wallet | null>(null);
@@ -55,6 +61,8 @@ export function TicketWalletProvider({
           clearAccount: () => {},
           earnTickets: unavailable,
           redeemPrize: unavailable,
+          claimTickets: unavailable,
+          updateAvatar: unavailable,
         }}
       >
         {children}
@@ -105,9 +113,12 @@ function PlayerWalletScope({
   const generation = useRef(0);
   const busy = useRef(false);
   const blocked = useRef(false);
+  const retryAfter = useRef(0);
+  const refetchSessionRef = useRef(refetchSession);
+  refetchSessionRef.current = refetchSession;
   const userId = user?.id;
   const refresh = useCallback(async () => {
-    if (blocked.current) return;
+    if (blocked.current || Date.now()<retryAfter.current) return;
     if (!userId) {
       setSnapshot(null);
       setLoading(false);
@@ -123,13 +134,15 @@ function PlayerWalletScope({
       if (body.user.id !== userId) {
         setSnapshot(null);
         setError("Your account changed. Reloading player details…");
-        await refetchSession();
+        await refetchSessionRef.current();
         return;
       }
+      retryAfter.current=0;
       setSnapshot(body);
       setError(null);
       setCleared(false);
     } catch (failure) {
+      retryAfter.current=Date.now()+60000;
       if (active.current && version === generation.current) {
         setSnapshot(null);
         setError(
@@ -141,7 +154,7 @@ function PlayerWalletScope({
     } finally {
       if (active.current && version === generation.current) setLoading(false);
     }
-  }, [userId, refetchSession]);
+  }, [userId]);
   useEffect(() => {
     active.current = true;
     void refresh();
@@ -193,6 +206,7 @@ function PlayerWalletScope({
         );
       if (!active.current || blocked.current || result.userId !== userId)
         throw new Error("Your account changed. Refresh before continuing.");
+      retryAfter.current=0;
       await refresh();
       if (typeof BroadcastChannel !== "undefined") {
         const channel = new BroadcastChannel("arcade-wallet");
@@ -236,10 +250,17 @@ function PlayerWalletScope({
         refresh: async () => {
           blocked.current = false;
           setCleared(false);
+          retryAfter.current=0;
           await refresh();
         },
         clearAccount,
         earnTickets: (resultId) => mutate("rewards", { resultId }),
+        owned: ready ? snapshot!.owned : undefined,
+        look: ready ? snapshot!.look : undefined,
+        hair: ready ? snapshot!.hair : undefined,
+        skin: ready ? snapshot!.skin : undefined,
+        updateAvatar: input => mutate("avatar",input),
+        claimTickets: (kind, requestId) => mutate("claims", {kind, requestId}),
         redeemPrize: (prizeId, requestId) =>
           mutate("redemptions", { prizeId, requestId }),
       }}
@@ -254,7 +275,7 @@ export function useTicketWallet() {
     throw new Error("useTicketWallet must be used inside TicketWalletProvider");
   // Compatibility for the merged Dreamio UI. Client-reported rewards stay disabled.
   const defaults = initialDream();
-  return { ...defaults, ...wallet, tickets: wallet.tickets ?? 0,
+  return { ...defaults, ...wallet, owned: wallet.owned ?? defaults.owned, look: wallet.look ?? defaults.look, hair: wallet.hair ?? defaults.hair, skin: wallet.skin ?? defaults.skin, tickets: wallet.tickets ?? 0,
     nickname: wallet.user?.name ?? "", ready: wallet.status === "ready",
     storageAvailable: true,
     login: (_name: string) => { window.location.assign("/sign-in"); return false; },
@@ -263,8 +284,8 @@ export function useTicketWallet() {
     spendTickets: (_amount: number) => false,
     completeGame: (_slug: string, _score: number) => 0,
     checkIn: () => 0,
-    purchase: (_id: string) => false,
-    equip: (_id: string) => false,
-    appearance: (_kind: "hair" | "skin", _value: number) => {},
+    purchase: (id: string, requestId: string) => wallet.redeemPrize(id,requestId),
+    equip: (itemId: string) => wallet.updateAvatar({itemId}),
+    appearance: (kind: "hair" | "skin", value: number) => wallet.updateAvatar({kind,value}),
   };
 }

@@ -1,4 +1,5 @@
 "use client";
+import { useGameSettlement, useGameTickets } from "./game-ticket-gate";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
@@ -21,7 +22,7 @@ import { useTicketWallet } from "./ticket-wallet";
 import { PixelIcon } from "./pixel-art";
 
 type GamePhase =
-  | "NEED_COIN"
+  | "NEED_TICKET"
   | "READY"
   | "DROPPING"
   | "GRABBING"
@@ -43,10 +44,12 @@ interface PitPlush {
 }
 
 export function ClawpopGame() {
-  const { addTickets } = useTicketWallet();
+  const settle = useGameSettlement();
+  const ticketRound = useGameTickets();
+  const {tickets} = useTicketWallet();
 
   // Credits & Collection state
-  const [credits, setCredits] = useState<number>(5);
+
   const [collectedCount, setCollectedCount] = useState<number>(0);
   const [collection, setCollection] = useState<{ [id: string]: number }>({});
   const [showCollectionModal, setShowCollectionModal] = useState<boolean>(false);
@@ -69,8 +72,8 @@ export function ClawpopGame() {
   } | null>(null);
 
   // Game flow & dialog
-  const [phase, setPhase] = useState<GamePhase>("NEED_COIN");
-  const [dialogueText, setDialogueText] = useState<string>("INSERT COIN TO START PLAYING! ♡");
+  const [phase, setPhase] = useState<GamePhase>("NEED_TICKET");
+  const [dialogueText, setDialogueText] = useState<string>("INSERT 1 TICKET TO PLAY · WIN +5 TICKETS ♡");
   const [modalTitle, setModalTitle] = useState<string>("");
   const [modalMessage, setModalMessage] = useState<string>("");
   const [lastWonToy, setLastWonToy] = useState<PlushToy | null>(null);
@@ -138,9 +141,9 @@ export function ClawpopGame() {
       });
 
       // Bonus Dreamio tickets
-      addTickets(15);
+      settle(true);
     },
-    [addTickets]
+    [settle]
   );
 
   // Audio mute toggle
@@ -149,13 +152,13 @@ export function ClawpopGame() {
     setIsMuted(muted);
   };
 
-  // 1. Insert Coin
-  const insertCoin = () => {
-    soundManager.playCoin();
-    setCredits((c) => c + 1);
-    if (phase === "NEED_COIN") {
+  // The real wallet pays for one catch; controls unlock only after server confirmation.
+  const insertTicket = async () => {
+    if(phase!=="NEED_TICKET" || !ticketRound.canInsert)return;
+    if(await ticketRound.start()){
+      soundManager.playCoin();
       setPhase("READY");
-      setDialogueText("READY! MOVE CLAW WITH D-PAD OR ARROW KEYS & PRESS CATCH! ✦");
+      setDialogueText("TICKET ACCEPTED! MOVE THE CLAW & PRESS CATCH! ✦");
     }
   };
 
@@ -281,10 +284,9 @@ export function ClawpopGame() {
 
   // 3. Drop Claw & Grab Detection
   const dropClaw = () => {
-    if (phase !== "READY" || credits <= 0) return;
+    if (phase !== "READY" || !ticketRound.paid) return;
 
     activeKeys.current.clear();
-    setCredits((c) => Math.max(0, c - 1));
     setPhase("DROPPING");
     setDialogueText("DROPPING THE CLAW... HOLD YOUR BREATH! ( ﾟдﾟ)");
     soundManager.playMotor(1.0);
@@ -358,6 +360,7 @@ export function ClawpopGame() {
         setModalTitle("MISSED! ✦");
         setModalMessage(randomMiss);
         setPhase("FAIL_MODAL");
+          settle(false);
         setIsClawOpen(true);
       }
     }, 1000);
@@ -426,6 +429,7 @@ export function ClawpopGame() {
           setModalTitle("OH NO! SLIPPED! ✧");
           setModalMessage(failMsg);
           setPhase("FAIL_MODAL");
+          settle(false);
         }, 650);
       } else {
         // SUCCESS! Continues to Chute safely
@@ -484,7 +488,7 @@ export function ClawpopGame() {
       const winTitle = WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)];
       setModalTitle(winTitle);
       setModalMessage(
-        `You captured ${caught.toy.name} (${caught.toy.japaneseName})! "${caught.toy.favoritePhrase}" (+15 Pts)`
+        `You captured ${caught.toy.name} (${caught.toy.japaneseName})! "${caught.toy.favoritePhrase}" (+5 Tickets)`
       );
       setPhase("WIN_MODAL");
     }, 750);
@@ -507,13 +511,8 @@ export function ClawpopGame() {
       }))
     );
 
-    if (credits > 0) {
-      setPhase("READY");
-      setDialogueText("READY FOR NEXT CATCH! MOVE CLAW & PRESS CATCH! ✦");
-    } else {
-      setPhase("NEED_COIN");
-      setDialogueText("INSERT COIN TO PLAY AGAIN! ♡");
-    }
+    setPhase("NEED_TICKET");
+    setDialogueText("ANOTHER TRY? INSERT 1 TICKET · WIN +5 TICKETS ♡");
   };
 
   return (
@@ -680,24 +679,26 @@ export function ClawpopGame() {
           <div className="deck-screws bottom-right" />
 
           <div className="deck-layout">
-            {/* 1. Credit Display & Insert Coin */}
+            {/* 1. Wallet Display & Insert Ticket */}
             <div className="deck-credit-col">
               <div className="credit-display-unit">
-                <span className="unit-label">CREDIT</span>
-                <RetroLedCounter value={credits} />
+                <span className="unit-label">TICKETS</span>
+                <RetroLedCounter value={tickets} />
               </div>
               <button
                 className="insert-coin-button"
-                onClick={insertCoin}
-                title="Insert coin to play"
+                onClick={() => void insertTicket()}
+                disabled={phase!=="NEED_TICKET" || !ticketRound.canInsert}
+                title="Spend 1 ticket for one catch"
               >
                 <span className="coin-slot-graphic">
                   <i />
                 </span>
-                <span>INSERT COIN</span>
+                <span>{ticketRound.busy ? "PLEASE WAIT…" : "INSERT TICKET · 1"}</span>
               </button>
             </div>
 
+            {ticketRound.error && <div className="claw-ticket-error" role="alert">{ticketRound.error}<button onClick={ticketRound.retry} disabled={ticketRound.busy}>Retry saving result</button></div>}
             {/* 2. Retro D-Pad Directional Movement Controls */}
             <div className="deck-dpad-col">
               <span className="dpad-title">HOLD TO MOVE CLAW</span>
@@ -781,7 +782,7 @@ export function ClawpopGame() {
               <p className="bubble-tagline">{lastWonToy.title}</p>
               <p className="bubble-personality">{lastWonToy.personality}</p>
               <p className="bubble-phrase">"{lastWonToy.favoritePhrase}"</p>
-              <div className="bubble-reward-badge">+15 DREAM POINTS! ✦</div>
+              <div className="bubble-reward-badge">+5 TICKETS! ✦</div>
               <button
                 className="bubble-action-button"
                 onClick={resetAfterRound}
@@ -801,9 +802,7 @@ export function ClawpopGame() {
               <h2 className="bubble-title">{modalTitle}</h2>
               <p className="bubble-message">{modalMessage}</p>
               <p className="bubble-hint">
-                {credits > 0
-                  ? `You have ${credits} credit${credits > 1 ? "s" : ""} left!`
-                  : "Insert a coin to go for another round!"}
+                {`Wallet: ${tickets} tickets · Next catch costs 1 ticket`}
               </p>
               <button
                 className="bubble-action-button"
@@ -875,7 +874,7 @@ export function ClawpopGame() {
       <div className="clawpop-footer-tips">
         <div className="tips-badge">HOW TO PLAY · DREAMIO ARCADE</div>
         <p>
-          1. <strong>Insert Coin</strong> to power up the machine.
+          1. <strong>Insert Ticket · 1</strong> to start one catch. A win earns 5 tickets.
           <br />
           2. Use <strong>D-Pad buttons</strong> (or Arrow Keys / WASD) to smoothly guide the claw. Hold down for continuous glide!
           <br />

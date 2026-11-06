@@ -1,13 +1,13 @@
 "use client";
 
+import { useGameSettlement } from "@/components/game-ticket-gate";
 import React, { useState } from "react";
-import { useTicketWallet } from "@/components/ticket-wallet";
 import { BATH_LEVELS } from "./levels";
 import { GameBoard } from "./game-board";
 import { bathAudio } from "./audio";
 
 export function PixelBathGame() {
-  const { addTickets } = useTicketWallet();
+  const settle = useGameSettlement();
 
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [levelStars, setLevelStars] = useState<Record<string, number>>({});
@@ -23,8 +23,7 @@ export function PixelBathGame() {
       [currentLevel.id]: Math.max(prev[currentLevel.id] || 0, ducksCount),
     }));
 
-    const earnedTickets = ducksCount * 2 + 5;
-    addTickets(earnedTickets);
+    settle(true);
 
     setTimeout(() => {
       setShowVictoryModal(true);
@@ -48,7 +47,7 @@ export function PixelBathGame() {
         key={currentLevel.id}
         level={currentLevel}
         onLevelComplete={handleLevelComplete}
-        onRestart={() => setShowVictoryModal(false)}
+        onRestart={() => settle(false)}
       />
 
       {/* 2. Floating Minimal Level Switcher (Top Left, alongside HUD) */}
@@ -62,6 +61,7 @@ export function PixelBathGame() {
               key={lvl.id}
               onClick={() => {
                 bathAudio.pop();
+                settle(false);
                 setCurrentLevelIndex(idx);
                 setShowVictoryModal(false);
               }}

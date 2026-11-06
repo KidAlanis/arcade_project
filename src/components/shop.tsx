@@ -1,11 +1,15 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { categories, items, type Category } from "@/lib/dreamio";
 import { useTicketWallet } from "./ticket-wallet";
 import { ItemArt, PixelIcon } from "./pixel-art";
 import { SectionHeading } from "./world-ui";
-export function Shop() {
+export function Shop({catalog}:{catalog:import("@/lib/player-contract").Prize[]}) {
+  const requests=useRef<Record<string,string>>({});
+  const [saving,setSaving]=useState(false);
+  const saleItems=items.filter(item=>item.price===0||catalog.some(prize=>prize.id===item.id)).map(item=>({...item,price:catalog.find(prize=>prize.id===item.id)?.price??item.price}));
+  async function buy(id:string){if(saving)return;setSaving(true);requests.current[id]??=crypto.randomUUID();try{await purchase(id,requests.current[id]);setMessage("Clothing saved to your wardrobe!");delete requests.current[id];}catch(e){setMessage(e instanceof Error?e.message:"Purchase failed.");}finally{setSaving(false);}}
   const { tickets, owned, nickname, ready, purchase } = useTicketWallet();
   const [filter, setFilter] = useState<Category | "all">("all");
   const [message, setMessage] = useState("");
@@ -36,7 +40,7 @@ export function Shop() {
           <strong>
             <PixelIcon name="coin" size={25} /> {tickets}
           </strong>
-          <small>DREAM POINTS</small>
+          <small>TICKETS</small>
         </div>
       </section>
       <section className="shop-section">
@@ -69,7 +73,7 @@ export function Shop() {
           ))}
         </div>
         <div className="shop-grid">
-          {items
+          {saleItems
             .filter((item) => filter === "all" || item.category === filter)
             .map((item) => {
               const has = owned.includes(item.id);
@@ -104,19 +108,13 @@ export function Shop() {
                       ) : (
                         <button
                           className="purchase-button"
-                          disabled={!ready || !nickname || tickets < item.price}
-                          onClick={() =>
-                            setMessage(
-                              purchase(item.id)
-                                ? `${item.name} is in your closet. Time for a new look!`
-                                : "Not enough points. Check in or finish a game first.",
-                            )
-                          }
+                          disabled={saving || !ready || !nickname || tickets < item.price}
+                          onClick={() => void buy(item.id)}
                         >
                           {!nickname
                             ? "Sign in first"
                             : tickets < item.price
-                              ? "Need more pts"
+                              ? "Need more tickets"
                               : "Get it +"}
                         </button>
                       )}

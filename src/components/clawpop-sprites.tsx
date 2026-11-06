@@ -616,7 +616,7 @@ export function PrizeChuteGraphic({ isDropping = false }: { isDropping?: boolean
 
 // 9. Retro 7-Segment LED Credit Display
 export function RetroLedCounter({ value }: { value: number }) {
-  const displayVal = Math.max(0, Math.min(99, value));
+  const displayVal = Math.max(0, value);
   return (
     <div className="retro-led-box">
       <span className="retro-led-glow">{displayVal.toString().padStart(2, "0")}</span>

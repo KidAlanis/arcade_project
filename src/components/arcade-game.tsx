@@ -1,4 +1,5 @@
 "use client";
+import { useGameSettlement, useGameTickets } from "./game-ticket-gate";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { games } from "@/lib/games";
@@ -21,6 +22,36 @@ const instructions: Record<string, string> = {
     "Insert a coin, use the directional buttons to position the claw, and press Catch to grab a cute plushie!",
 };
 export function ArcadeGame({ game }: { game: Game }) {
+  const settle = useGameSettlement();
+  const ticketRound=useGameTickets();
+  const { completeGame, best, rewards, nickname } = useTicketWallet();
+  const [playing, setPlaying] = useState(false);
+  const [round, setRound] = useState(0);
+  const [result, setResult] = useState<{
+    score: number;
+    detail: string;
+    reward: number;
+    claimed: boolean;
+  } | null>(null);
+  const finished = useRef(false);
+  const onFinish: OnFinish = (score, detail) => {
+    if (finished.current) return;
+    finished.current = true;
+    const claimed = rewards[game.slug] === localDay();
+    const reward = score > 0 ? 5 : 0;
+    settle(score > 0);
+    setResult({ score, detail, reward, claimed });
+    setPlaying(false);
+  };
+  function start() {
+    finished.current = false;
+    setResult(null);
+    setRound((n) => n + 1);
+    setPlaying(true);
+  }
+  useEffect(()=>{
+    if(ticketRound.paid && game.engine!=="clawpop")start();
+  },[ticketRound.paid,game.engine]);
   if (game.engine === "clawpop") {
     return (
       <main className="clawpop-page-container">
@@ -44,30 +75,6 @@ export function ArcadeGame({ game }: { game: Game }) {
         <ClawpopGame />
       </main>
     );
-  }
-  const { completeGame, best, rewards, nickname } = useTicketWallet();
-  const [playing, setPlaying] = useState(false);
-  const [round, setRound] = useState(0);
-  const [result, setResult] = useState<{
-    score: number;
-    detail: string;
-    reward: number;
-    claimed: boolean;
-  } | null>(null);
-  const finished = useRef(false);
-  const onFinish: OnFinish = (score, detail) => {
-    if (finished.current) return;
-    finished.current = true;
-    const claimed = rewards[game.slug] === localDay();
-    const reward = completeGame(game.slug, score);
-    setResult({ score, detail, reward, claimed });
-    setPlaying(false);
-  };
-  function start() {
-    finished.current = false;
-    setResult(null);
-    setRound((n) => n + 1);
-    setPlaying(true);
   }
   return (
     <main>
@@ -125,7 +132,7 @@ export function ArcadeGame({ game }: { game: Game }) {
                 {result && (
                   <p role="status">
                     {result.reward > 0
-                      ? "10 Dream Points are in your pocket. Pick a little treat ♥"
+                      ? "5 tickets are in your pocket. Pick a little treat ♥"
                       : !nickname
                         ? "Sign in to the local demo to earn points for finishing games."
                         : result.claimed
