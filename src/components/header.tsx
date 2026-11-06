@@ -1,4 +1,5 @@
 "use client";
+import { TicketGifts } from "./ticket-gifts";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -29,13 +30,8 @@ export function Header() {
   return (
     <>
       <header className="header">
-        <Link href="/" className="brand" aria-label="Neon Quarter home">
-          <span className="brand-mark" aria-hidden="true">
-            NQ
-          </span>
-          <span>
-            NEON<span className="brand-second">QUARTER</span>
-          </span>
+        <Link href="/" className="brand dreamio-brand" aria-label="Dreamio home">
+          DREAMIO<span className="brand-dot" aria-hidden="true">✦</span>
         </Link>
         <nav aria-label="Main navigation">
           <Link href="/" aria-current={path === "/" ? "page" : undefined}>
@@ -45,16 +41,18 @@ export function Header() {
             href="/shop"
             aria-current={path === "/shop" ? "page" : undefined}
           >
-            Prize shop ↗
+            Clothing shop
           </Link>
           {user ? (
             <Link
               href="/shelf"
               aria-current={path === "/shelf" ? "page" : undefined}
             >
-              My shelf
+              My prizes
             </Link>
           ) : null}
+          <TicketGifts key={user?.id ?? "guest"} />
+          {user && <Link href="/wardrobe">My wardrobe</Link>}
         </nav>
         <div className="header-player">
           <div

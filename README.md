@@ -1,3 +1,5 @@
+> **Current status (2026-11-06):** migrations 004–006 are applied and connected player-flow tests passed. Earlier pending/blocker notes below are historical. See [verified results](docs/PLAYER_FLOW_VERIFIED.md). Game win validation remains a known limitation.
+
 # Neon Quarter
 
 A collaborative Next.js arcade with a shared game registry, Better Auth email/password accounts, one Postgres ticket wallet per player, and a prize shop/shelf. Games remain Coming soon; no prizes are seeded.
@@ -38,3 +40,7 @@ Client integration uses `earnTickets(serverVerifiedResultId)` and `redeemPrize(p
 ## Integration with latest main (PR merge)
 
 Main now includes Dreamio, Pixel Bath and Clawpop. Their game source is preserved and dedicated game pages require sign-in. The shared wallet is still server-authoritative. A compatibility adapter keeps the new UI compiling but deliberately rejects legacy arbitrary add/spend, daily rewards, score rewards and client-only purchases. Legacy wardrobe equip/appearance currently return defaults/no-op; durable cosmetics and validated game rewards need follow-up integration. The shop route uses the secure Postgres catalog. No legacy localStorage balance is imported. Earlier connected tests predate this merge; the merged tree passes 17 tests and production build but requires browser regression testing of the new Dreamio UI.
+
+## Game ticket update (pending migration 004)
+
+New signup 200 / paid round 1 / win +5. See [game-ticket implementation and setup status](docs/GAME_TICKETS.md). Existing balances remain unchanged; Supabase MCP is required to apply the pending migration. Browser-reported wins remain an anti-cheat limitation. This update supersedes the earlier disabled game integration notes after migration 004 is applied.

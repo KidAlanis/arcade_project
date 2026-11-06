@@ -59,7 +59,7 @@ export function AuthForm({
         <h1>{signup ? "Join the arcade." : "Continue playing."}</h1>
         <p className="auth-description">
           {signup
-            ? "Create your player account. Your ticket wallet starts at zero."
+            ? "Create your player account. Your ticket wallet starts with 200 tickets."
             : "Sign in to earn tickets and build your prize shelf."}
         </p>
         {setupMessage ? (

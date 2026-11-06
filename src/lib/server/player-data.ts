@@ -1,5 +1,7 @@
+import { items, defaultLook, type Look } from "@/lib/dreamio";
+import {parseTicketClaim,parseGameTicketRequest,PLAY_COST,WIN_REWARD} from "@/lib/game-ticket-rules";
 import "server-only";
-import { randomUUID } from "node:crypto";
+import { randomUUID, randomInt } from "node:crypto";
 import type { PoolClient } from "pg";
 import type {
   MutationResult,
@@ -63,7 +65,14 @@ export async function getPlayerSnapshot(): Promise<PlayerSnapshot> {
        FROM public.arcade_redemptions WHERE user_id = $1 ORDER BY redeemed_at DESC, id DESC`,
       [user.id],
     );
-    return { user: { id: user.id, name: user.name }, tickets, shelf: rows };
+    const exists = await client.query("SELECT to_regclass('public.arcade_avatars') IS NOT NULL AS ready");
+    let avatar = {look: {...defaultLook}, hair: 0, skin: 0};
+    if(exists.rows[0].ready){
+      const profile=await client.query("SELECT look,hair,skin FROM public.arcade_avatars WHERE user_id=$1",[user.id]);
+      if(profile.rows[0])avatar=profile.rows[0];
+    }
+    const owned=Array.from(new Set([...items.filter(item=>item.price===0).map(item=>item.id),...rows.map(row=>row.prizeId).filter(id=>items.some(item=>item.id===id))]));
+    return { user: { id: user.id, name: user.name }, tickets, shelf: rows, owned, ...avatar };
   });
 }
 
@@ -110,6 +119,10 @@ export async function redeemPrize(input: unknown): Promise<MutationResult> {
       [prizeId],
     );
     const prize = rows[0];
+    if(items.some(item=>item.id===prizeId)){
+      const owned=await client.query("SELECT id FROM public.arcade_redemptions WHERE user_id=$1 AND prize_id=$2",[user.id,prizeId]);
+      if(owned.rows[0])return {userId:user.id,tickets:balance,redemptionId:owned.rows[0].id,alreadyApplied:true};
+    }
     if (!prize?.active)
       throw new PlayerError(
         "PRIZE_UNAVAILABLE",
@@ -202,4 +215,101 @@ export async function earnTickets(input: unknown): Promise<MutationResult> {
       alreadyApplied: false,
     };
   });
+}
+
+// One paid run per player. A new start abandons the previous unfinished run.
+export async function gameTicketAction(input: unknown) {
+ const user = await requirePlayer();
+ const data = parseGameTicketRequest(input);
+ if(!data)throw new PlayerError("INVALID_REQUEST", "Submit only a supported game and round ID, or a round outcome. Ticket amounts and user IDs are not accepted.");
+ const runId=data.runId;
+ return transaction(async client => {
+  await requireTable(client,"public.arcade_game_runs");
+  const balance = await lockWallet(client, user.id);
+  const found = await client.query<{game_id:string; outcome:string|null; age:number}>("SELECT game_id, outcome, extract(epoch from (now()-started_at))::float8 AS age FROM public.arcade_game_runs WHERE id=$1 AND user_id=$2 FOR UPDATE", [runId,user.id]);
+  const run = found.rows[0];
+  if (data.action === "start") {
+   if (run) {
+    if (run.game_id !== data.gameId || run.outcome) throw new PlayerError("RUN_CLOSED", "Start a new round.",409);
+    return {runId,tickets:balance,alreadyApplied:true};
+   }
+   if (balance < PLAY_COST) throw new PlayerError("INSUFFICIENT_TICKETS", "You need 1 ticket to play.",409);
+   await client.query("UPDATE public.arcade_game_runs SET outcome='loss',finished_at=now() WHERE user_id=$1 AND finished_at IS NULL",[user.id]);
+   await client.query("INSERT INTO public.arcade_game_runs(id,user_id,game_id) VALUES ($1,$2,$3)",[runId,user.id,data.gameId]);
+   await client.query("UPDATE public.arcade_wallets SET balance=balance-1,updated_at=now() WHERE user_id=$1",[user.id]);
+   return {runId,tickets:balance-PLAY_COST,alreadyApplied:false};
+  }
+  if (!run) throw new PlayerError("INVALID_RESULT", "Paid round not found for this player.",404);
+  if (run.outcome) {
+   if (run.outcome !== data.outcome) throw new PlayerError("RUN_CLOSED", "This round was already settled.",409);
+   return {runId,tickets:balance,alreadyApplied:true};
+  }
+  if (run.age < 0.5 || run.age > 86400) throw new PlayerError("INVALID_RESULT", "This round cannot be settled yet or has expired.",409);
+  if (data.outcome === "win") {
+   if (balance > 2147483647-WIN_REWARD) throw new PlayerError("WALLET_LIMIT", "Wallet limit reached.",409);
+   await client.query("UPDATE public.arcade_wallets SET balance=balance+5,updated_at=now() WHERE user_id=$1",[user.id]);
+  }
+  await client.query("UPDATE public.arcade_game_runs SET outcome=$3,finished_at=now() WHERE id=$1 AND user_id=$2",[runId,user.id,data.outcome]);
+  return {runId,tickets:balance+(data.outcome === "win" ? WIN_REWARD : 0),alreadyApplied:false};
+ });
+}
+
+export async function claimFreeTickets(input: unknown) {
+ const user=await requirePlayer();
+ const d=parseTicketClaim(input);
+ if(!d)throw new PlayerError("INVALID_REQUEST","Submit only a claim kind and request ID.");
+ return transaction(async client=>{
+  await requireTable(client,"public.arcade_ticket_claims");
+  const balance=await lockWallet(client,user.id);
+  const previous=await client.query<{kind:string;amount:number}>("SELECT kind,amount FROM public.arcade_ticket_claims WHERE user_id=$1 AND request_id=$2",[user.id,d.requestId]);
+  if(previous.rows[0]){
+   if(previous.rows[0].kind!==d.kind)throw new PlayerError("REQUEST_CONFLICT","This request was used for a different claim.",409);
+   return {userId:user.id,tickets:balance,amount:previous.rows[0].amount,alreadyApplied:true};
+  }
+  let day:string|null=null;
+  if(d.kind==='daily'){
+   const date=await client.query<{day:string}>("SELECT to_char(now() AT TIME ZONE 'UTC','YYYY-MM-DD') AS day");day=date.rows[0].day;
+   const claimed=await client.query<{amount:number}>("SELECT amount FROM public.arcade_ticket_claims WHERE user_id=$1 AND kind='daily' AND claim_day=$2",[user.id,day]);
+   if(claimed.rows[0])return {userId:user.id,tickets:balance,amount:claimed.rows[0].amount,alreadyApplied:true};
+  }else if(balance!==0)throw new PlayerError("NOT_ELIGIBLE","Free refill is available only when your wallet has 0 tickets.",409);
+  const amount=d.kind==='daily'?randomInt(10,51):10;
+  if(balance>2147483647-amount)throw new PlayerError("WALLET_LIMIT","Wallet limit reached.",409);
+  await client.query("INSERT INTO public.arcade_ticket_claims(id,user_id,request_id,kind,amount,claim_day) VALUES ($1,$2,$3,$4,$5,$6)",[randomUUID(),user.id,d.requestId,d.kind,amount,day]);
+  await client.query("UPDATE public.arcade_wallets SET balance=balance+$2,updated_at=now() WHERE user_id=$1",[user.id,amount]);
+  return {userId:user.id,tickets:balance+amount,amount,alreadyApplied:false};
+ });
+}
+
+async function requireTable(client:PoolClient, table:string){
+ const result=await client.query("SELECT to_regclass($1) IS NOT NULL AS ready",[table]);
+ if(!result.rows[0].ready)throw new PlayerError("SETUP_REQUIRED","This feature needs the pending database update. Please try again after setup is complete.",503);
+}
+export async function updateAvatar(input:unknown){
+ const user=await requirePlayer();
+ if(!input||typeof input!=="object"||Array.isArray(input))throw new PlayerError("INVALID_REQUEST","Invalid avatar request.");
+ const d=input as Record<string,unknown>;
+ const equip=Object.keys(d).length===1&&typeof d.itemId==="string";
+ const appearance=Object.keys(d).length===2&&(d.kind==="hair"||d.kind==="skin")&&Number.isInteger(d.value)&&[0,1,2].includes(d.value as number);
+ if(!equip&&!appearance)throw new PlayerError("INVALID_REQUEST","Choose a clothing item or valid appearance option.");
+ return transaction(async client=>{
+  await requireTable(client,"public.arcade_avatars");
+  const balance=await lockWallet(client,user.id);
+  await client.query("INSERT INTO public.arcade_avatars(user_id,look) VALUES($1,$2::jsonb) ON CONFLICT DO NOTHING",[user.id,JSON.stringify(defaultLook)]);
+  const profile=await client.query<{look:Look;hair:number;skin:number}>("SELECT look,hair,skin FROM public.arcade_avatars WHERE user_id=$1 FOR UPDATE",[user.id]);
+  const avatar=profile.rows[0];
+  if(equip){
+   if(d.itemId==="")avatar.look.accessory="";
+   else{
+    const item=items.find(item=>item.id===d.itemId);
+    if(!item)throw new PlayerError("INVALID_REQUEST","Unknown clothing item.");
+    if(item.price!==0){
+     const ownership=await client.query("SELECT id FROM public.arcade_redemptions WHERE user_id=$1 AND prize_id=$2",[user.id,item.id]);
+     if(!ownership.rows[0])throw new PlayerError("NOT_OWNED","Redeem this item before wearing it.",403);
+    }
+    avatar.look[item.category]=item.id;
+   }
+  }else avatar[d.kind as "hair"|"skin"]=d.value as number;
+  await client.query("UPDATE public.arcade_avatars SET look=$2::jsonb,hair=$3,skin=$4,updated_at=now() WHERE user_id=$1",[user.id,JSON.stringify(avatar.look),avatar.hair,avatar.skin]);
+  return {userId:user.id,tickets:balance,alreadyApplied:false};
+ });
 }

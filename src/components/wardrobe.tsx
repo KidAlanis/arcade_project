@@ -8,6 +8,7 @@ import { WindowBar } from "./world-ui";
 export function Wardrobe() {
   const { look, hair, skin, nickname, owned, equip, appearance, ready } =
     useTicketWallet();
+  async function save(work:()=>Promise<unknown>,text:string){try{await work();setMessage(text);}catch(e){setMessage(e instanceof Error?e.message:"Could not save outfit.");}}
   const [category, setCategory] = useState<Category>("top");
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -92,7 +93,7 @@ export function Wardrobe() {
                   className={`closet-item ${look.accessory === "" ? "selected" : ""}`}
                   disabled={!ready}
                   onClick={() => {
-                    equip("");
+                    void save(()=>equip(""),"Accessory removed · Outfit saved");
                     setMessage("A fresh little look. Outfit saved.");
                   }}
                 >
@@ -109,8 +110,7 @@ export function Wardrobe() {
                     aria-pressed={look[category] === item.id}
                     disabled={!ready}
                     onClick={() => {
-                      if (equip(item.id))
-                        setMessage(`Wearing ${item.name} · Outfit saved`);
+                      void save(()=>equip(item.id),`Wearing ${item.name} · Outfit saved`);
                     }}
                   >
                     <ItemArt item={item} />
@@ -146,7 +146,7 @@ export function Wardrobe() {
                       }
                       aria-pressed={hair === i}
                       disabled={!ready}
-                      onClick={() => appearance("hair", i)}
+                      onClick={() => void save(()=>appearance("hair",i),"Hair saved")}
                     >
                       {hair === i && "✓"}
                     </button>
@@ -162,7 +162,7 @@ export function Wardrobe() {
                       aria-label={`Skin tone ${i + 1}`}
                       aria-pressed={skin === i}
                       disabled={!ready}
-                      onClick={() => appearance("skin", i)}
+                      onClick={() => void save(()=>appearance("skin",i),"Appearance saved")}
                     >
                       {skin === i && "✓"}
                     </button>
@@ -172,7 +172,7 @@ export function Wardrobe() {
             </div>
             <div className="closet-saved" role="status">
               <PixelIcon name="check" size={15} />
-              {message || "Your outfit is saved automatically in this browser"}
+              {message || "Your outfit is saved to your player account"}
             </div>
           </div>
         </div>

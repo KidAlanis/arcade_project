@@ -1,7 +1,7 @@
 // Deliberately plan-only. The current project setup requires verified Supabase MCP.
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-const names = ["001_better_auth.sql", "002_player_data.sql", "003_private_trigger_permissions.sql"];
+const names = ["001_better_auth.sql", "002_player_data.sql", "003_private_trigger_permissions.sql", "004_game_tickets.sql", "005_ticket_claims.sql", "006_clothing_and_avatars.sql"];
 if (process.argv.includes("--apply")) {
   console.error(
     "Apply blocked: this setup requires the verified Supabase MCP. No database connection or SQL execution was attempted. Use MCP list_migrations and apply_migration after confirming the project.",

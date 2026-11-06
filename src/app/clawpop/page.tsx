@@ -1,3 +1,4 @@
+import { GameTicketGate } from "@/components/game-ticket-gate";
 import { PlayerUnavailable } from "@/components/player-unavailable";
 import { pageAccess } from "@/lib/server/session";
 import Link from "next/link";
@@ -35,7 +36,7 @@ export default async function ClawpopPage() {
         </Link>
       </div>
 
-      <ClawpopGame />
+      <GameTicketGate gameId={"clawpop"}><ClawpopGame /></GameTicketGate>
     </main>
   );
 }
