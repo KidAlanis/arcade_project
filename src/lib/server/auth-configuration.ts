@@ -2,6 +2,7 @@
 // The actual runtime entry point (auth.ts) and pg pool (db.ts) are server-only.
 import { PostgresDialect, type PostgresPool } from "kysely";
 import { nextCookies } from "better-auth/next-js";
+import { trustedOrigins } from "../trusted-origins";
 import { authOptions } from "./auth-options";
 
 export function authConfiguration(
@@ -19,6 +20,7 @@ export function authConfiguration(
     },
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
+    trustedOrigins: trustedOrigins(env),
     plugins: [nextCookies()],
   };
 }

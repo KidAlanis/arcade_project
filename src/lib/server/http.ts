@@ -1,4 +1,5 @@
 import "server-only";
+import { trustedOrigins } from "../trusted-origins";
 import { PlayerError, publicError } from "./errors";
 export function json(data: unknown, status = 200) {
   return Response.json(data, {
@@ -11,8 +12,8 @@ export function errorResponse(error: unknown) {
   return json({ code: safe.code, message: safe.message }, safe.status);
 }
 export async function readMutation(request: Request): Promise<unknown> {
-  const allowed = process.env.BETTER_AUTH_URL;
-  if (!allowed || request.headers.get("origin") !== new URL(allowed).origin)
+  const origin = request.headers.get("origin");
+  if (!origin || !trustedOrigins(process.env).includes(origin))
     throw new PlayerError(
       "INVALID_ORIGIN",
       "This request must come from the arcade website.",
