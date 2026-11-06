@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import {createContext,useContext,useRef,useState,type ReactNode} from "react";
 import {useTicketWallet} from "./ticket-wallet";
 type Controls = { start:()=>Promise<boolean>; busy:boolean; paid:boolean; canInsert:boolean; error:string; retry:()=>void };
@@ -42,6 +43,7 @@ export function GameTicketGate({gameId,children}:{gameId:string;children:ReactNo
  return <ControlsContext.Provider value={controls}><Context.Provider value={won=>{void finish(won);}}>
  <div className={`ticket-game-shell ${gameId==="game-1"?"ticket-game-fullscreen":""}`}>
  {content}
+ {gameId==="game-1"&&controls.paid&&<Link href="/lobby" className="game-back-floating">← Back to lobby</Link>}
  {gameId!=="clawpop"&&!controls.paid&&<div className="ticket-game-overlay"><div className="ticket-game-card">
  <span className="eyebrow">ONE TICKET. ONE LITTLE ADVENTURE.</span>
  <h2>{outcome===null?"Your next round awaits":outcome?"Lovely win!":"One more try?"}</h2>
@@ -49,6 +51,7 @@ export function GameTicketGate({gameId,children}:{gameId:string;children:ReactNo
  <p className="ticket-game-balance">▤ {tickets} tickets</p>
  {error&&<p role="alert">{error}</p>}
  {outcome!==null&&!settled.current?<button className="button pink-button" disabled={busy} onClick={controls.retry}>Retry saving result</button>:<button className="button purple-button" disabled={!controls.canInsert} onClick={()=>void start()}>{busy?"Inserting ticket…":"INSERT TICKET · 1"}</button>}
+ <Link href="/lobby" className="game-back-link" aria-disabled={busy} onClick={event=>{if(busy)event.preventDefault();}}>← Back to lobby</Link>
  </div></div>}
  </div></Context.Provider></ControlsContext.Provider>;
 }
