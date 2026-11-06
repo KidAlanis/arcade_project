@@ -18,13 +18,16 @@ export function HomeWorld() {
         <h1 className="dreamio-title" aria-label="Dreamio">
           <span aria-hidden="true">DREAMIO</span>
         </h1>
-        <p className="landing-tagline">Sign in to collect tickets, play games and unlock outfits.</p>
+        <p className="landing-tagline">Small pixels. Endless possibilities.</p>
         <div className="landing-login returning-login">
           {nickname && <p className="landing-player">WELCOME BACK, <strong>{nickname}</strong></p>}
           <div className="landing-action-pair">
-            <Link href="/lobby" className="landing-start">LET’S PLAY</Link>
+            <Link href="/welcome" className="landing-start">PRESS START</Link>
             <Link href="/wardrobe" className="landing-start">VISIT MY DRESSING ROOM</Link>
           </div>
+          <Link href={nickname ? "/lobby" : "/sign-in"} className="landing-guest">
+            {nickname ? "Visit the arcade →" : "Sign in / Join →"}
+          </Link>
         </div>
       </section>
       <div className="landing-character">

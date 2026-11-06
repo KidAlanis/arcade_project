@@ -1,19 +1,64 @@
 "use client";
+
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { categories, items, type Category } from "@/lib/dreamio";
+import { useEffect, useRef, useState } from "react";
+import { type Category } from "@/lib/dreamio";
+import { dressColors, type CharacterLayer } from "@/lib/character";
+import { streetColors, streetParts, type StreetPart } from "@/lib/street-character";
+import { StreetCharacter, StreetItemArt, useStreetCharacter } from "./street-character";
+import { useDreamerProfile } from "./dreamer-profile";
 import { useTicketWallet } from "./ticket-wallet";
-import { ItemArt, PixelAvatar, PixelIcon } from "./pixel-art";
-import { WindowBar } from "./world-ui";
+import { PixelIcon } from "./pixel-art";
+import {
+  CharacterLayerArt,
+  LayeredCharacter,
+  useCharacterLook,
+} from "./layered-character";
+import styles from "./wardrobe.module.css";
+
+type RoomTab = Category | "hair" | "face";
+const menu: { id: RoomTab; label: string; icon: string }[] = [
+  { id: "top", label: "TOPS", icon: "shirt" },
+  { id: "bottom", label: "BOTTOMS", icon: "pants" },
+  { id: "dress", label: "DRESSES", icon: "dress" },
+  { id: "shoes", label: "SHOES", icon: "shoe" },
+  { id: "bag", label: "BAGS", icon: "bag" },
+  { id: "accessory", label: "ACCESSORIES", icon: "bow" },
+  { id: "hair", label: "HAIR", icon: "hair" },
+  { id: "face", label: "FACE", icon: "face" },
+];
+
+function Hearts({ count, large = false }: { count: number; large?: boolean }) {
+  return (
+    <span
+      className={`${styles.hearts} ${large ? styles.largeHearts : ""}`}
+      aria-label={`${count} of 5 hearts`}
+    >
+      {Array.from({ length: 5 }, (_, i) => (
+        <PixelIcon
+          key={i}
+          name="heart"
+          size={large ? 23 : 14}
+          className={i < count ? styles.pinkHeart : styles.blueHeart}
+        />
+      ))}
+    </span>
+  );
+}
+
 export function Wardrobe() {
-  const { look, hair, skin, nickname, owned, equip, appearance, ready } =
-    useTicketWallet();
-  async function save(work:()=>Promise<unknown>,text:string){try{await work();setMessage(text);}catch(e){setMessage(e instanceof Error?e.message:"Could not save outfit.");}}
-  const [category, setCategory] = useState<Category>("top");
+  const { nickname, tickets } = useTicketWallet();
+  const profile = useDreamerProfile();
+  const { look, ready, storageAvailable, update, reset } = useCharacterLook();
+  const street = useStreetCharacter();
+  const isStreet = street.character === "street";
+  const [tab, setTab] = useState<RoomTab>("top");
+  const [closetOpen, setClosetOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
   const [error, setError] = useState("");
+  const photoDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (!file) {
       setPreview("");
@@ -23,221 +68,485 @@ export function Wardrobe() {
     setPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [file]);
+  useEffect(() => {
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setClosetOpen(false);
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, []);
+  const avatar = isStreet ? <StreetCharacter look={street.look} /> : <LayeredCharacter look={look} />;
+  const portrait = isStreet ? <StreetCharacter look={street.look} portrait /> : <LayeredCharacter look={look} portrait />;
+  const rating = isStreet ? {
+    CUTE: street.look.headband ? 4 : 3,
+    COOL: street.look.jacket ? 5 : 3,
+    PRETTY: 4,
+    TRENDY: street.look.bag ? 4 : 3,
+  } : {
+    CUTE: look.ears ? 4 : 3,
+    COOL: look.wings ? 5 : 3,
+    PRETTY: look.dress ? 4 : 3,
+    TRENDY: look.cuffs ? 4 : 3,
+  };
+  const currentMenu = menu.find((m) => m.id === tab)!;
+  function streetChoice(part: "jacket" | "bag" | "headband" | "earrings") {
+    const item = streetParts[part];
+    return <button key={part} className={`${styles.item} ${street.look[part] ? styles.selectedItem : ""}`}
+      aria-label={item.name} aria-pressed={street.look[part]} disabled={!street.ready}
+      onClick={() => {
+        street.update({ [part]: !street.look[part] });
+        setMessage(street.look[part] ? "A little less. A new mood. ♡" : "NEW LOOK! Looking good. ♥");
+      }}>
+      <StreetItemArt part={part} /><span>{item.name}</span>
+      <b className={styles.shopPrice}>{street.look[part] ? "ON · TAP TO REMOVE" : "OFF · TAP TO WEAR"}</b>
+    </button>;
+  }
+  function renderStreetChoices() {
+    if (tab === "top") return <>{streetChoice("jacket")}<p className={styles.editorNote}>Wear the leather jacket over your lace dress, or try the dress on its own.</p></>;
+    if (tab === "bag") return <>{streetChoice("bag")}</>;
+    if (tab === "accessory") return <>{streetChoice("headband")}{streetChoice("earrings")}</>;
+    if (tab === "hair") return <>
+      <div className={`${styles.item} ${styles.selectedItem}`}><span className={styles.optionAvatar}>{portrait}</span><span>Long Dark Hair</span></div>
+      {streetChoice("headband")}
+    </>;
+    if (tab === "shoes") return <>
+      <div className={`${styles.item} ${styles.selectedItem}`}><StreetItemArt part="boots" /><span>Black Knee-high Boots</span><b className={styles.shopPrice}>EQUIPPED ✦</b></div>
+      <p className={styles.editorNote}>Your photo's original black boots. The full-body proportions stay connected.</p>
+    </>;
+    if (tab === "face") return <>
+      <div className={`${styles.item} ${styles.selectedItem}`}><span className={styles.optionAvatar}>{portrait}</span><span>Photo Portrait</span></div>
+      <button className={styles.item} disabled={!street.ready} onClick={() => { street.reset(); setMessage("Your original leather & lace look. ♥"); }}>
+        <span className={styles.none}>↺</span><span>Restore photo outfit</span>
+      </button>
+    </>;
+    return <>
+      {streetColors.map((color) => <button key={color.id}
+        className={`${styles.item} ${street.look.dressColor === color.id ? styles.selectedItem : ""}`}
+        aria-label={color.name} aria-pressed={street.look.dressColor === color.id} disabled={!street.ready}
+        onClick={() => { street.update({ dressColor: color.id }); setMessage(`${color.name.toUpperCase()} — NEW LOOK! ♥`); }}>
+        <StreetItemArt part="dress" color={color.id} /><span>{color.name}</span>
+      </button>)}
+      {tab === "bottom" && <p className={styles.editorNote}>The lace skirt belongs to this one-piece dress.</p>}
+    </>;
+  }
+  function toggleLayer(layer: Exclude<CharacterLayer, "body" | "foreground" | "boots">) {
+    update({ [layer]: !look[layer] });
+    setMessage(
+      look[layer]
+        ? "A little less. A new mood. ♡"
+        : "NEW LOOK! Looking good. ♥",
+    );
+  }
+  function layerChoice(
+    layer: Exclude<CharacterLayer, "body" | "foreground" | "boots">,
+    name: string,
+  ) {
+    return (
+      <button
+        key={layer}
+        className={`${styles.item} ${look[layer] ? styles.selectedItem : ""}`}
+        aria-label={name}
+        aria-pressed={look[layer]}
+        disabled={!ready}
+        onClick={() => toggleLayer(layer)}
+      >
+        <CharacterLayerArt layer={layer} />
+        <span>{name}</span>
+        <b className={styles.shopPrice}>
+          {look[layer] ? "ON · TAP TO REMOVE" : "OFF · TAP TO WEAR"}
+        </b>
+      </button>
+    );
+  }
+  function renderChoices() {
+    if (isStreet) return renderStreetChoices();
+    if (tab === "shoes") return (
+      <>
+        <div className={`${styles.item} ${styles.selectedItem}`}>
+          <CharacterLayerArt layer="boots" />
+          <span>Black Lace-up Boots</span>
+          <b className={styles.shopPrice}>EQUIPPED ✦</b>
+        </div>
+        <p className={styles.editorNote}>Black lace-up boots, made to match your original pixel look.</p>
+      </>
+    );
+    if (tab === "dress" || tab === "top")
+      return (
+        <>
+          {dressColors.map((color) => (
+            <button
+              key={color.id}
+              className={`${styles.item} ${look.dress && look.dressColor === color.id ? styles.selectedItem : ""}`}
+              aria-label={color.name}
+              aria-pressed={look.dress && look.dressColor === color.id}
+              disabled={!ready}
+              onClick={() => {
+                update({ dress: true, dressColor: color.id });
+                setMessage(`${color.name.toUpperCase()} — NEW LOOK! ♥`);
+              }}
+            >
+              <CharacterLayerArt layer="dress" color={color.id} />
+              <span>{color.name}</span>
+            </button>
+          ))}
+          <button
+            className={`${styles.item} ${!look.dress ? styles.selectedItem : ""}`}
+            aria-label="Use covered base outfit"
+            aria-pressed={!look.dress}
+            disabled={!ready}
+            onClick={() => {
+              update({ dress: false });
+              setMessage("Back to your covered base outfit. ♡");
+            }}
+          >
+            <span className={styles.none}>✧</span>
+            <span>Base outfit</span>
+          </button>
+        </>
+      );
+    if (tab === "bottom")
+      return (
+        <>
+          {layerChoice("tights", "Fishnet Tights")}
+          <p className={styles.editorNote}>
+            The tights are a separate layer. Tap to wear or remove them.
+          </p>
+        </>
+      );
+    if (tab === "accessory")
+      return (
+        <>
+          {layerChoice("wings", "Black Feather Wings")}
+          {layerChoice("cuffs", "Silver Wrist Cuff")}
+          {layerChoice("ears", "Cat Ears")}
+        </>
+      );
+    if (tab === "hair")
+      return (
+        <>
+          <div className={`${styles.item} ${styles.selectedItem}`}>
+            <span className={styles.optionAvatar}>{portrait}</span>
+            <span>Original Black Hair</span>
+          </div>
+          {layerChoice("ears", "Cat Ears")}
+          <p className={styles.editorNote}>
+            Your original hair and face stay with this character.
+          </p>
+        </>
+      );
+    if (tab === "face")
+      return (
+        <>
+          <div className={`${styles.item} ${styles.selectedItem}`}>
+            <span className={styles.optionAvatar}>{portrait}</span>
+            <span>Original Portrait</span>
+          </div>
+          <button
+            className={styles.item}
+            disabled={!ready}
+            onClick={() => {
+              reset();
+              setMessage("Your original look, just like the photo. ♥");
+            }}
+          >
+            <span className={styles.none}>↺</span>
+            <span>Restore original look</span>
+          </button>
+        </>
+      );
+    return (
+      <div className={styles.editorNote}>
+        <PixelIcon name="bag" size={27} />
+        <p>
+          Your original look has no bag. The phone stays with your selfie pose.
+        </p>
+        <Link href="/shop">VISIT THE SHOP ↗</Link>
+      </div>
+    );
+  }
   return (
-    <main>
-      <div className="page-breadcrumb">
-        <span>HOME / MY DRESSING ROOM</span>
-        <span>EVERY VERSION OF YOU IS LOVELY ♡</span>
-      </div>
-      <div className="wardrobe-heading">
-        <div>
-          <p className="eyebrow">SAME YOU. A BRAND NEW MOOD.</p>
-          <h1>
-            My dressing room <span>✦</span>
+    <main className={styles.room}>
+      <div className={styles.shell}>
+        <header className={styles.topbar}>
+          <h1 className={styles.title}>
+            <PixelIcon name="star" size={28} />
+            <span>Dreamio Style</span>
+            <PixelIcon name="star" size={28} />
           </h1>
-          <p>A little cute, a little cool, a whole lot of you.</p>
-        </div>
-        <Link href="/shop" className="button outline-button">
-          <PixelIcon name="bag" size={17} />
-          Visit the pixel shop ↗
-        </Link>
-      </div>
-      <section className="dressing-room">
-        <div className="pixel-window avatar-window">
-          <WindowBar title="MY PIXEL SELF" icon="person" />
-          <div className="dressing-stage">
-            <div className="dressing-scene" />
-            <span className="dressing-name">
-              {nickname || "DREAMER"}
-              <small>STYLE LV. 01</small>
+          <button
+            className={styles.characterPicker}
+            aria-label={`Switch character to ${isStreet ? "Midnight Wings" : "Leather and Lace"}`}
+            disabled={!street.ready || !ready}
+            onClick={() => {
+              street.select(isStreet ? "original" : "street");
+              setClosetOpen(false);
+              setMessage(`HELLO, ${isStreet ? "MIDNIGHT WINGS" : "LEATHER & LACE"}! ♥`);
+            }}
+          >
+            <span className={styles.switchPortrait} aria-hidden="true">
+              {isStreet ? <LayeredCharacter look={look} portrait /> : <StreetCharacter look={street.look} portrait />}
             </span>
-            <span className="speech-bubble">
-              NEW LOOK! <span>♥</span>
+            <span className={styles.switchCopy}>
+              <b>SWITCH CHARACTER</b>
+              <small>{isStreet ? "MIDNIGHT WINGS" : "LEATHER & LACE"}</small>
             </span>
-            <div className="dressing-avatar">
-              <PixelAvatar look={look} hair={hair} skin={skin} />
-            </div>
-            <span className="stage-floor" />
-            <span className="stage-star star-a">✦</span>
-            <span className="stage-star star-b">✧</span>
+            <span className={styles.switchArrow} aria-hidden="true">⇄</span>
+          </button>
+          <div className={styles.topActions}>
+            <Link
+              href="/shop"
+              className={styles.points}
+              aria-label={`Visit shop, ${tickets} Dream Points`}
+            >
+              <PixelIcon name="coin" size={18} />
+              <span>{tickets}</span>
+            </Link>
+            <button
+              className={styles.topButton}
+              aria-label="Open photo preview"
+              onClick={() => photoDialog.current?.showModal()}
+            >
+              <PixelIcon name="person" size={22} />
+            </button>
+            <Link
+              href="/lobby"
+              className={styles.exitButton}
+              aria-label="Back to game lobby"
+            >
+              <span aria-hidden="true">◧</span>
+              <span aria-hidden="true">◨</span>
+            </Link>
           </div>
-          <div className="avatar-caption">
-            <PixelIcon name="heart" size={17} />
-            <span>{message || "Every version of you is a lovely one."}</span>
-            <span>♥ ♥ ♥</span>
-          </div>
-        </div>
-        <div className="wardrobe-controls pixel-window">
-          <WindowBar title="YOUR LITTLE CLOSET" icon="shirt" />
-          <div className="closet-body">
-            <div className="closet-heading">
-              <h2>Your little closet</h2>
-              <span>{owned.length} little finds</span>
-            </div>
-            <div className="closet-tabs" aria-label="Closet categories">
-              {categories.map((c) => (
-                <button
-                  key={c.id}
-                  className={category === c.id ? "active" : ""}
-                  aria-pressed={category === c.id}
-                  onClick={() => setCategory(c.id)}
-                >
-                  <PixelIcon name={c.icon} size={23} />
-                  <span>{c.label}</span>
-                </button>
-              ))}
-            </div>
-            <div className="closet-items">
-              {category === "accessory" && (
-                <button
-                  className={`closet-item ${look.accessory === "" ? "selected" : ""}`}
-                  disabled={!ready}
-                  onClick={() => {
-                    void save(()=>equip(""),"Accessory removed · Outfit saved");
-                    setMessage("A fresh little look. Outfit saved.");
-                  }}
-                >
-                  <span className="no-accessory">✧</span>
-                  <span>No accessory</span>
-                </button>
-              )}
-              {items
-                .filter((i) => i.category === category && owned.includes(i.id))
-                .map((item) => (
-                  <button
-                    key={item.id}
-                    className={`closet-item ${look[category] === item.id ? "selected" : ""}`}
-                    aria-pressed={look[category] === item.id}
-                    disabled={!ready}
-                    onClick={() => {
-                      void save(()=>equip(item.id),`Wearing ${item.name} · Outfit saved`);
-                    }}
-                  >
-                    <ItemArt item={item} />
-                    <span>{item.name}</span>
-                    {look[category] === item.id && (
-                      <span className="selected-check">✓</span>
-                    )}
-                  </button>
-                ))}
-              <Link href="/shop" className="closet-item add-item">
-                <span>+</span>
-                <span>Find more cuteness</span>
-              </Link>
-            </div>
-            <div className="appearance-options">
-              <h3>
-                Base avatar <small>MAKE IT YOURS</small>
-              </h3>
-              <div>
-                <span>Hair</span>
-                <div className="swatches">
-                  {["#a47eac", "#a37b68", "#69728f"].map((color, i) => (
-                    <button
-                      key={color}
-                      style={{ background: color }}
-                      className={hair === i ? "selected" : ""}
-                      aria-label={
-                        [
-                          "Lavender long hair",
-                          "Chestnut long hair",
-                          "Midnight short hair",
-                        ][i]
-                      }
-                      aria-pressed={hair === i}
-                      disabled={!ready}
-                      onClick={() => void save(()=>appearance("hair",i),"Hair saved")}
-                    >
-                      {hair === i && "✓"}
-                    </button>
-                  ))}
-                </div>
-                <span>Skin tone</span>
-                <div className="swatches">
-                  {["#fbdac5", "#dfad89", "#ae775d"].map((color, i) => (
-                    <button
-                      key={color}
-                      style={{ background: color }}
-                      className={skin === i ? "selected" : ""}
-                      aria-label={`Skin tone ${i + 1}`}
-                      aria-pressed={skin === i}
-                      disabled={!ready}
-                      onClick={() => void save(()=>appearance("skin",i),"Appearance saved")}
-                    >
-                      {skin === i && "✓"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="closet-saved" role="status">
-              <PixelIcon name="check" size={15} />
-              {message || "Your outfit is saved to your player account"}
-            </div>
-          </div>
-        </div>
-      </section>
-      <section className="photo-section pixel-window">
-        <WindowBar title="A PIXEL VERSION OF YOU" icon="upload" />
-        <div className="photo-body">
-          <div className="photo-intro">
-            <span className="tiny-tag">NEXT CHAPTER</span>
-            <h2>Meet the pixel version of you.</h2>
-            <p>
-              A future update will turn your photo into a personal chibi avatar,
-              ready to dress up.
-            </p>
-            <p className="photo-status">
-              AI generation is not connected yet. You can preview a photo
-              locally; it is never uploaded or saved.
-            </p>
-          </div>
-          <div className="photo-upload">
-            {preview ? (
-              <div className="photo-preview">
-                <img src={preview} alt="Local preview of your selected photo" />
-                <button
-                  aria-label="Remove preview photo"
-                  onClick={() => setFile(null)}
-                >
-                  ×
-                </button>
-              </div>
-            ) : (
-              <PixelIcon name="upload" size={27} />
-            )}
-            <label className="upload-label">
-              {preview ? "Choose another photo" : "Preview a photo"}
-              <input
-                key={preview ? "selected" : "empty"}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={(e) => {
-                  const selected = e.target.files?.[0];
-                  if (!selected) return;
-                  if (
-                    !["image/jpeg", "image/png", "image/webp"].includes(
-                      selected.type,
-                    ) ||
-                    selected.size > 10 * 1024 * 1024
-                  ) {
-                    setError("Choose a JPG, PNG, or WebP image under 10 MB.");
-                    return;
-                  }
-                  setError("");
-                  setFile(selected);
+        </header>
+        <div className={styles.workspace}>
+          <nav className={styles.menu} aria-label="Dressing room categories">
+            {menu.map((entry) => (
+              <button
+                key={entry.id}
+                className={`${styles.menuButton} ${tab === entry.id ? styles.activeMenu : ""}`}
+                aria-label={entry.label}
+                aria-pressed={tab === entry.id}
+                aria-expanded={closetOpen && tab === entry.id}
+                aria-controls="room-closet"
+                onClick={() => {
+                  setClosetOpen(tab === entry.id ? !closetOpen : true);
+                  setTab(entry.id);
                 }}
-              />
-            </label>
-            <small>JPG / PNG / WEBP · MAX 10 MB</small>
-            {error && (
-              <span className="form-error" role="alert">
-                {error}
+              >
+                <PixelIcon name={entry.icon} size={42} />
+                <span>{entry.label}</span>
+              </button>
+            ))}
+          </nav>
+          <section
+            className={styles.stage}
+            aria-label="Your outfit on the city street"
+          >
+            <div className={styles.street} aria-hidden="true" />
+            <div className={styles.sceneGrain} aria-hidden="true" />
+            <span className={styles.playerName}>{profile.nickname || nickname || "DREAMER"}</span>
+            <span className={styles.streetSign} aria-hidden="true">
+              DREAMIO <b>21:05</b>
+            </span>
+            <div className={styles.mainAvatar}>{avatar}</div>
+
+            <div className={styles.dialogue} role="status">
+              <span className={styles.bunny} aria-hidden="true">
+                <i />
+                <i />
+                <b>• ᴗ •</b>
               </span>
+              <span>
+                {message || (
+                  <>
+                    So...
+                    <br />
+                    what do you think?
+                    <br />
+                    <em>♡</em>
+                  </>
+                )}
+              </span>
+            </div>
+            <span className={styles.savedLabel}>
+              {(isStreet ? street.storageAvailable : storageAvailable) ? "AUTO SAVED" : "SESSION ONLY"} <span>✦</span>
+            </span>
+            {closetOpen && (
+              <section
+                id="room-closet"
+                className={styles.closet}
+                aria-label={`${currentMenu.label} selection`}
+              >
+                <div className={styles.closetHeader}>
+                  <span>
+                    <PixelIcon name={currentMenu.icon} size={17} />
+                    {currentMenu.label}
+                  </span>
+                  <button
+                    aria-label="Close item selection"
+                    onClick={() => setClosetOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className={styles.itemGrid}>{renderChoices()}</div>
+                <div className={styles.closetFoot}>
+                  <span>YOUR PHOTO · YOUR LAYERS</span>
+                  <Link href="/shop">SHOP ↗</Link>
+                </div>
+              </section>
             )}
-          </div>
+          </section>
+          <aside className={styles.sidebar} aria-label="Your style preview">
+            <section className={styles.portraitCard}>
+              <div className={styles.portraitFrame}>
+                <div className={styles.portraitStreet} />
+                <span className={styles.portraitAvatar}>{portrait}</span>
+              </div>
+              <div className={styles.newLook}>
+                NEW LOOK!
+                <PixelIcon name="heart" size={21} />
+              </div>
+            </section>
+            <section
+              className={styles.styleCheck}
+              aria-label="Outfit mood ratings"
+            >
+              <h2>STYLE CHECK</h2>
+              <div className={styles.overallHearts}>
+                <Hearts count={4} large />
+              </div>
+              <div className={styles.ratings}>
+                {Object.entries(rating).map(([label, count]) => (
+                  <div key={label}>
+                    <span>{label}</span>
+                    <Hearts count={count} />
+                  </div>
+                ))}
+              </div>
+            </section>
+            <section
+              className={styles.outfitCard}
+              aria-label="Current outfit pieces"
+            >
+              <div className={styles.outfitInner}>
+                <div className={styles.outfitPieces}>
+                  {isStreet ? (["jacket", "dress", "bag", "headband", "earrings", "boots"] as StreetPart[]).map((part) => (
+                    <button key={part} className={`${styles.outfitPiece} ${part !== "dress" && part !== "boots" && !street.look[part] ? styles.hiddenPiece : ""}`}
+                      aria-label={`Edit ${streetParts[part].name}`}
+                      onClick={() => {
+                        setTab(part === "jacket" ? "top" : part === "boots" ? "shoes" : part === "bag" ? "bag" : part === "dress" ? "dress" : "accessory");
+                        setClosetOpen(true);
+                      }}><StreetItemArt part={part} color={street.look.dressColor} /></button>
+                  )) : (["dress", "wings", "cuffs", "tights", "boots"] as const).map(
+                    (layer) => (
+                      <button
+                        key={layer}
+                        className={`${styles.outfitPiece} ${layer !== "boots" && !look[layer] ? styles.hiddenPiece : ""}`}
+                        aria-label={`Edit ${layer} layer`}
+                        onClick={() => {
+                          setTab(
+                            layer === "boots"
+                              ? "shoes"
+                              : layer === "dress"
+                              ? "dress"
+                              : layer === "tights"
+                                ? "bottom"
+                                : "accessory",
+                          );
+                          setClosetOpen(true);
+                        }}
+                      >
+                        <CharacterLayerArt
+                          layer={layer}
+                          color={look.dressColor}
+                        />
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
+            </section>
+            <Link
+              href="/shop"
+              className={styles.nextButton}
+              aria-label="Next: visit the pixel shop"
+            >
+              NEXT <span>▶</span>
+            </Link>
+          </aside>
         </div>
-      </section>
+        <div className={styles.bottomBar}>
+          <Link href="/lobby">◀ GAME LOBBY</Link>
+          <span>YOUR LITTLE DRESS-UP WORLD</span>
+          <button onClick={() => photoDialog.current?.showModal()}>
+            PHOTO STUDIO <PixelIcon name="person" size={12} />
+          </button>
+        </div>
+      </div>
+      <dialog
+        aria-label="Photo Studio"
+        ref={photoDialog}
+        className={styles.photoDialog}
+      >
+        <div className={styles.closetHeader}>
+          <span>PHOTO STUDIO</span>
+          <button
+            aria-label="Close photo studio"
+            onClick={() => photoDialog.current?.close()}
+          >
+            ×
+          </button>
+        </div>
+        <div className={styles.photoContent}>
+          <PixelIcon name="person" size={40} />
+          <h2>A pixel version of you.</h2>
+          <p>
+            Your current character was made from your photo. Preview a new photo
+            here; automatic generation for new uploads is not connected yet.
+          </p>
+          <p className={styles.photoNote}>
+            Local preview only. Your photo is not uploaded or saved.
+          </p>
+          {preview && (
+            <div className={styles.photoPreview}>
+              <img src={preview} alt="Local preview of your selected photo" />
+              <button
+                aria-label="Remove preview photo"
+                onClick={() => setFile(null)}
+              >
+                ×
+              </button>
+            </div>
+          )}
+          <label className={styles.uploadButton}>
+            {preview ? "CHOOSE ANOTHER PHOTO" : "PREVIEW A PHOTO"}
+            <input
+              key={preview ? "selected" : "empty"}
+              aria-label="Choose a photo for local preview"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(event) => {
+                const selected = event.target.files?.[0];
+                if (!selected) return;
+                if (
+                  !["image/jpeg", "image/png", "image/webp"].includes(
+                    selected.type,
+                  ) ||
+                  selected.size > 10 * 1024 * 1024
+                ) {
+                  setError("Choose a JPG, PNG, or WebP image under 10 MB.");
+                  return;
+                }
+                setError("");
+                setFile(selected);
+              }}
+            />
+          </label>
+          <small>JPG / PNG / WEBP · MAX 10 MB</small>
+          {error && <p role="alert">{error}</p>}
+        </div>
+      </dialog>
     </main>
   );
 }

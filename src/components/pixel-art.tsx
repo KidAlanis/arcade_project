@@ -15,6 +15,9 @@ export function PixelIcon({
     game: "M5 5h14v2h3v3h2v10h-7v-3H7v3H0V10h2V7h3Zm0 5v2H3v3h2v2h3v-2h2v-3H8v-2Zm12 0v3h3v-3Zm-3 4v3h3v-3Z",
     shirt: "M7 2h3v3h4V2h3v2h3v2h3v7h-5v9H6v-9H1V6h3V4h3Z",
     pants: "M4 2h16v20h-6V11h-4v11H4Z",
+    dress: "M7 1h4v5h2V1h4v7h-2v3h2v4h2v4h2v4H3v-4h2v-4h2v-4h2V8H7Z",
+    hair: "M8 1h8v2h4v4h2v16h-6V12h-2V6h-4v6H8v11H2V7h2V3h4Z",
+    face: "M7 1h10v2h4v4h2v10h-2v4h-4v2H7v-2H3v-4H1V7h2V3h4Zm0 7v4h3V8Zm7 0v4h3V8Zm-5 8v3h6v-3Z",
     shoe: "M5 3h9v11h3v2h5v6H2V12h3Z",
     bow: "M2 3h5v3h3v3h4V6h3V3h5v18h-5v-3h-3v-3h-4v3H7v3H2Z",
     coin: "M7 1h10v2h4v4h2v10h-2v4h-4v2H7v-2H3v-4H1V7h2V3h4Zm3 5v3H7v6h3v3h4v-3h3V9h-3V6Z",
@@ -50,16 +53,20 @@ export function PixelAvatar({
   hair = 0,
   skin = 0,
   className = "",
+  variant = "default",
 }: {
   look?: Look;
   hair?: number;
   skin?: number;
   className?: string;
+  variant?: "default" | "fashion";
 }) {
   const top = items.find((i) => i.id === look.top)!;
   const bottom = items.find((i) => i.id === look.bottom)!;
   const shoes = items.find((i) => i.id === look.shoes)!;
   const accessory = items.find((i) => i.id === look.accessory);
+  const dress = items.find((i) => i.id === look.dress);
+  const bag = items.find((i) => i.id === look.bag);
   const hairColors = [
     ["#72517b", "#a47eac", "#caa1cc"],
     ["#6d514d", "#a37b68", "#c3a08a"],
@@ -73,12 +80,17 @@ export function PixelAvatar({
   return (
     <svg
       className={`pixel-avatar ${className}`}
-      viewBox="0 0 48 66"
+      viewBox={variant === "fashion" ? "0 0 48 100" : "0 0 48 66"}
       role="img"
       aria-label="Your pixel avatar"
       shapeRendering="crispEdges"
     >
-      <path fill="#65507b" opacity=".18" d="M8 62h32v3H8z" />
+      <path
+        fill="#65507b"
+        opacity=".18"
+        d="M8 62h32v3H8z"
+        transform={variant === "fashion" ? "translate(0 34)" : undefined}
+      />
       <path
         fill={hairColors[0]}
         d={
@@ -111,41 +123,69 @@ export function PixelAvatar({
       <path fill="#b893c0" d="M18 25h2v1h-2zM29 25h2v1h-2z" />
       <path fill="#ef9eac" d="M13 26h4v2h-4zM31 26h4v2h-4z" />
       <path fill="#bc7b83" d="M23 28h3v1h-3z" />
-      <path
-        fill={skinColors[1]}
-        d="M21 31h6v5h-6zM11 41h4v8h-4zM33 41h4v8h-4zM17 51h5v10h-5zM27 51h5v10h-5z"
-      />
-      <path
-        fill={skinColors[0]}
-        d="M11 42h3v5h-3zM34 42h3v5h-3zM18 52h3v8h-3zM28 52h3v8h-3z"
-      />
-      <path fill={top.dark} d="M18 33h12v2h5v3h3v7h-6v6H16v-6h-6v-7h3v-3h5Z" />
-      <path fill={top.color} d="M18 35h4v2h4v-2h4v2h4v6h-4v6H18v-6h-4v-6h4Z" />
-      <path fill="#fff" opacity=".5" d="M16 37h2v5h-2zM19 39h2v8h-2z" />
-      {top.style === "heart" && (
-        <path fill="#fff3f6" d="M21 40h2v2h2v-2h2v4h-2v2h-2v-2h-2Z" />
-      )}
-      {top.style === "star" && (
-        <path fill="#fff0b7" d="M23 39h2v3h3v2h-3v3h-2v-3h-3v-2h3Z" />
-      )}
-      <path
-        fill={bottom.dark}
-        d={
-          bottom.style === "skirt"
-            ? "M16 48h16v3h2v5H14v-5h2Z"
-            : "M16 48h16v12h-7v-6h-2v6h-7Z"
+      <g
+        transform={
+          variant === "fashion" ? "translate(0 -31) scale(1 2)" : undefined
         }
-      />
-      <path
-        fill={bottom.color}
-        d={
-          bottom.style === "skirt"
-            ? "M17 49h14v3h2v2H15v-2h2Z"
-            : "M17 49h14v3h-2v6h-3v-6h-4v6h-5Z"
-        }
-      />
-      <path fill={shoes.dark} d="M15 59h8v5H13v-3h2ZM25 59h8v2h2v3H25Z" />
-      <path fill={shoes.color} d="M16 59h6v3h-8v-1h2ZM26 59h6v2h2v1h-8Z" />
+      >
+        <path
+          fill={skinColors[1]}
+          d="M21 31h6v5h-6zM11 41h4v8h-4zM33 41h4v8h-4zM17 51h5v10h-5zM27 51h5v10h-5z"
+        />
+        <path
+          fill={skinColors[0]}
+          d="M11 42h3v5h-3zM34 42h3v5h-3zM18 52h3v8h-3zM28 52h3v8h-3z"
+        />
+        <path
+          fill={top.dark}
+          d="M18 33h12v2h5v3h3v7h-6v6H16v-6h-6v-7h3v-3h5Z"
+        />
+        <path
+          fill={top.color}
+          d="M18 35h4v2h4v-2h4v2h4v6h-4v6H18v-6h-4v-6h4Z"
+        />
+        <path fill="#fff" opacity=".5" d="M16 37h2v5h-2zM19 39h2v8h-2z" />
+        {top.style === "heart" && (
+          <path fill="#fff3f6" d="M21 40h2v2h2v-2h2v4h-2v2h-2v-2h-2Z" />
+        )}
+        {top.style === "star" && (
+          <path fill="#fff0b7" d="M23 39h2v3h3v2h-3v3h-2v-3h-3v-2h3Z" />
+        )}
+        <path
+          fill={bottom.dark}
+          d={
+            bottom.style === "skirt"
+              ? "M16 48h16v3h2v5H14v-5h2Z"
+              : "M16 48h16v12h-7v-6h-2v6h-7Z"
+          }
+        />
+        <path
+          fill={bottom.color}
+          d={
+            bottom.style === "skirt"
+              ? "M17 49h14v3h2v2H15v-2h2Z"
+              : "M17 49h14v3h-2v6h-3v-6h-4v6h-5Z"
+          }
+        />
+        {dress && (
+          <g>
+            <path
+              fill={dress.dark}
+              d="M17 33h5v3h4v-3h5v3h4v9h-3v3h3v4h3v7H10v-7h3v-4h3v-3h-3v-9h4Z"
+            />
+            <path
+              fill={dress.color}
+              d="M18 35h3v3h6v-3h3v3h3v5h-4v7h3v4h3v3H13v-3h3v-4h3v-7h-4v-5h3Z"
+            />
+            <path
+              fill="#d8d4f7"
+              d="M20 44h9v2h-9zM22 40h2v3h-2zM25 40h2v3h-2zM22 49h2v6h-2zM28 51h2v4h-2z"
+            />
+          </g>
+        )}
+        <path fill={shoes.dark} d="M15 59h8v5H13v-3h2ZM25 59h8v2h2v3H25Z" />
+        <path fill={shoes.color} d="M16 59h6v3h-8v-1h2ZM26 59h6v2h2v1h-8Z" />
+      </g>
       {accessory?.style === "bow" && (
         <g>
           <path fill={accessory.dark} d="M29 5h5v3h3V5h5v10h-5v-3h-3v3h-5Z" />
@@ -162,6 +202,17 @@ export function PixelAvatar({
           <path fill="#efa8c4" d="M14 1h2v6h-2ZM32 1h2v6h-2Z" />
         </g>
       )}
+      {bag && (
+        <g
+          transform={
+            variant === "fashion" ? "translate(0 -31) scale(1 2)" : undefined
+          }
+        >
+          <path fill={bag.dark} d="M35 36h2v10h6v9h-10v-9h2z" />
+          <path fill={bag.color} d="M34 47h8v7h-8z" />
+          <path fill="#ddd4f6" d="M37 48h2v2h-2z" />
+        </g>
+      )}
     </svg>
   );
 }
@@ -175,6 +226,15 @@ export function ItemArt({ item }: { item: Item }) {
       shapeRendering="crispEdges"
     >
       <g fill={item.dark}>
+        {item.category === "dress" && (
+          <path d="M11 3h6v7h6V3h6v11h-3v5h3v5h3v5h3v8H5v-8h3v-5h3v-5h3v-5h-3Z" />
+        )}
+        {item.category === "bag" && (
+          <path
+            d="M12 5h16v3h3v9h5v19H4V17h5V8h3Zm2 4v8h12V9Z"
+            fillRule="evenodd"
+          />
+        )}
         {item.category === "top" && (
           <path d="M11 6h6v3h6V6h6v3h4v3h4v12h-8v12H11V24H3V12h4V9h4Z" />
         )}
@@ -201,6 +261,10 @@ export function ItemArt({ item }: { item: Item }) {
         )}
       </g>
       <g fill={item.color}>
+        {item.category === "dress" && (
+          <path d="M13 5h2v7h10V5h2v7h-3v8h3v5h3v6h2v3H8v-3h2v-6h3v-5h3v-8h-3Z" />
+        )}
+        {item.category === "bag" && <path d="M7 20h26v13H7z" />}
         {item.category === "top" && (
           <path d="M12 9h4v3h8V9h4v3h4v3h2v6h-8v12H14V21H6v-6h2v-3h4Z" />
         )}

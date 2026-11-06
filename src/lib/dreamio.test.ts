@@ -7,9 +7,26 @@ import {
   finishGame,
   initialDream,
   restoreDream,
+  saveProfile,
 } from "./dreamio";
 const player = () => ({ ...initialDream(), nickname: "Dreamer" });
 const day = (n: number) => new Date(2026, 9, n, 12);
+test("profile settings survive reload without changing game progress or older saves", () => {
+  const state = claimDaily(player(), day(1))!;
+  const saved = saveProfile(state, "  Moon  ", "nonbinary", 83.25)!;
+  assert.equal(saved.nickname, "Moon");
+  assert.equal(saved.tickets, state.tickets);
+  assert.deepEqual(saved.owned, state.owned);
+  assert.deepEqual(restoreDream(JSON.stringify(saved)), saved);
+  assert.equal(saveProfile(state, " ", "female", 0), null);
+  assert.equal(saveProfile(state, "Moon", "male", NaN), null);
+  const { gender, daylight, ...olderSave } = state;
+  const restored = restoreDream(JSON.stringify(olderSave));
+  assert.equal(restored.gender, "unspecified");
+  assert.equal(restored.daylight, 0);
+  assert.equal(restoreDream(JSON.stringify({ ...state, gender: "invalid", daylight: 500 })).daylight, 100);
+  assert.equal(restoreDream(JSON.stringify({ ...state, gender: "invalid" })).gender, "unspecified");
+});
 test("daily reward is once per local calendar day, with a seven-day bonus", () => {
   let state = player();
   for (let i = 1; i <= 7; i++) {
@@ -72,4 +89,35 @@ test("saved progress survives reload; corrupt storage cannot equip unowned items
   assert.equal(invalid.hair, 0);
   assert.equal(invalid.skin, 0);
   assert.deepEqual(invalid.best, {});
+});
+
+test("dresses and bags preserve older closets and switch back to separates", () => {
+  const oldSave = {
+    ...player(),
+    look: {
+      top: "top-white",
+      bottom: "bottom-blue",
+      shoes: "shoes-white",
+      accessory: "",
+    },
+  };
+  const restored = restoreDream(JSON.stringify(oldSave));
+  assert.equal(restored.look.dress, "");
+  assert.equal(restored.look.bag, "");
+  const funded = { ...restored, tickets: 100 };
+  const withDress = equipItem(
+    buyItem(funded, "dress-midnight")!,
+    "dress-midnight",
+  )!;
+  assert.equal(withDress.look.dress, "dress-midnight");
+  const withBag = equipItem(
+    buyItem(withDress, "bag-lavender")!,
+    "bag-lavender",
+  )!;
+  assert.equal(withBag.look.bag, "bag-lavender");
+  assert.equal(equipItem(withBag, "top-white")!.look.dress, "");
+  assert.equal(equipItem(withBag, "", "dress")!.look.dress, "");
+  assert.equal(equipItem(withBag, "", "bag")!.look.bag, "");
+  assert.equal(equipItem(withBag, "", "top"), null);
+  assert.deepEqual(restoreDream(JSON.stringify(withBag)), withBag);
 });

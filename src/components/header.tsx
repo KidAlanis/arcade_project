@@ -27,6 +27,7 @@ export function Header() {
       await refresh();
     }
   }
+  if (["/", "/wardrobe", "/welcome", "/intro"].includes(path)) return null;
   return (
     <>
       <header className="header">
@@ -53,6 +54,7 @@ export function Header() {
           ) : null}
           <TicketGifts key={user?.id ?? "guest"} />
           {user && <Link href="/wardrobe">My wardrobe</Link>}
+          <Link href="/welcome">My dreamer profile</Link>
         </nav>
         <div className="header-player">
           <div

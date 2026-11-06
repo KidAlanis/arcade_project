@@ -1,0 +1,89 @@
+.page:not([data-complete="true"]) { cursor: pointer; }
+.page {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: none;
+  height: 100svh;
+  min-height: 440px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  background: #8280cb;
+  color: #fff5e5;
+  font-family: var(--pixel);
+}
+.scene { position: absolute; inset: 0; z-index: -2; background: url('/art/dreamio-castle-day.png') center / cover; }
+.video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; pointer-events: none; }
+.video[data-active="true"] { opacity: 1; }
+.shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, #221844b8, #38225c35 48%, #25194414 75%), linear-gradient(90deg, #31225c55, transparent 75%); }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 30px 5vw; gap: 25px; }
+.brand { font-size: 20px; text-shadow: 2px 2px #645081; }
+.brand span { color: #ffe6b1; }
+.back { font-family: var(--pixel); font-size: 9px; text-shadow: 1px 2px #4a3964; }
+.caption { position: absolute; left: 7vw; right: 7vw; bottom: 20%; max-width: 950px; }
+.caption { transition: opacity 180ms ease-out; }
+.caption[data-leaving="true"] { opacity: 0; }
+.topbar, .controls, .shade { transition: opacity 1.8s ease-out, visibility 0s 1.8s; }
+.page[data-complete="true"] .caption { transition: opacity 1.8s ease-out, visibility 0s 1.8s; }
+.page[data-complete="true"] .caption,
+.page[data-complete="true"] .topbar,
+.page[data-complete="true"] .controls,
+.page[data-complete="true"] .shade {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.words { animation: arrive 350ms both; }
+.eyebrow { color: #ffe1af; font-size: clamp(8px, 1vw, 11px); letter-spacing: 2px; margin-bottom: 22px; text-shadow: 2px 2px #785274, 0 0 18px #ffdca788; }
+.eyebrow span { display: inline-block; margin-right: 9px; font-size: 20px; animation: twinkle 3s ease-in-out infinite; }
+.caption h1 { color: #fff0ce; font-family: var(--pixel); font-size: clamp(24px, 3.5vw, 48px); line-height: 1.45; letter-spacing: 1px; font-weight: 400; white-space: pre-line; text-shadow: 3px 3px 0 #8a659d, 5px 5px 0 #392c6a, 0 0 30px #ffdbab55; }
+.detail { max-width: 660px; font-size: clamp(9px, 1.15vw, 13px); line-height: 2; margin-top: 24px; color: #fff6e8; text-shadow: 2px 2px #4b396a; }
+.controls { position: absolute; left: 7vw; right: 7vw; bottom: 5%; }
+.track { height: 2px; width: 100%; background: #fff4d630; }
+.track span { display: block; height: 2px; background: #ffe4b1; box-shadow: 0 0 10px #ffdf94; transition: width 250ms linear; }
+.controlRow { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: 20px; font-size: 8px; color: #fff3d7; text-shadow: 1px 2px #4b396a; }
+.journey > span { color: #e4d5f2; margin-left: 25px; }
+.controls button, .playbackNotice button { background: transparent; border: 0; padding: 8px 0; font-family: var(--pixel); color: #ffe4b1; text-shadow: 1px 2px #4b396a; }
+.controls button:hover, .back:hover { color: #fff; }
+.playbackNotice { position: absolute; top: 22%; left: 7vw; right: 7vw; font-size: 11px; color: #fff1ce; text-shadow: 2px 2px #4b396a; }
+.playbackNotice button { margin-top: 12px; font-size: 13px; }
+.worldMap { position: absolute; inset: 0; pointer-events: none; animation: revealMap 400ms 1.8s both; }
+.mapRegions { display: block; width: 100%; height: 100%; overflow: hidden; }
+.roomLink { pointer-events: auto; cursor: pointer; outline: none; }
+.roomLink:focus-visible { outline: none; }
+.roomShape { fill: transparent; stroke: none; }
+.roomGlow { opacity: 0; pointer-events: none; filter: blur(20px); transition: opacity 280ms ease-out; }
+.roomSprite { opacity: 0; pointer-events: none; transform-box: view-box; transform-origin: 2355px 1110px; transition: opacity 180ms ease-out, transform 280ms ease-out, filter 280ms ease-out; }
+.roomLabel { pointer-events: none; fill: #fff0ce; font-family: var(--pixel); font-size: 36px; font-weight: 400; letter-spacing: 1px; text-shadow: 3px 3px 0 #8a659d, 5px 5px 0 #392c6a, 0 0 30px #ffdbab88; opacity: 0; transform: translateY(10px); transition: opacity 220ms ease-out, transform 220ms ease-out; }
+.roomLink:hover .roomGlow, .roomLink:focus-visible .roomGlow { opacity: .6; }
+.roomLink:hover .roomSprite, .roomLink:focus-visible .roomSprite { opacity: 1; transform: scale(1.015); filter: drop-shadow(0 0 7px #ffe29888); }
+.roomLink:hover .roomLabel, .roomLink:focus-visible .roomLabel { opacity: 1; transform: translateY(0); }
+.mobileRoomLink { display: none; }
+@keyframes revealMap { from { opacity: 0; visibility: hidden; } to { opacity: 1; visibility: visible; } }
+@keyframes arrive { from { opacity: 0; transform: translateY(12px); filter: blur(2px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+@keyframes twinkle { 50% { opacity: .4; } }
+@media (max-width: 700px) {
+  .topbar { padding: 25px 6vw; align-items: flex-start; }
+  .brand { font-size: 16px; }
+  .back { font-size: 7px; max-width: 130px; text-align: right; line-height: 1.8; }
+  .video { object-position: center; }
+  .caption { left: 6vw; right: 6vw; bottom: 24%; }
+  .caption h1 { font-size: clamp(21px, 5.4vw, 33px); line-height: 1.6; }
+  .eyebrow { line-height: 1.8; margin-bottom: 15px; letter-spacing: 1px; }
+  .detail { font-size: 10px; line-height: 2.2; margin-top: 18px; }
+  .controls { left: 6vw; right: 6vw; bottom: 5%; }
+  .controlRow { align-items: flex-start; line-height: 1.8; font-size: 7px; }
+  .journey > span { display: block; margin: 6px 0 0; }
+  .playbackNotice { left: 6vw; top: 20%; }
+  .mapRegions { display: none; }
+  .mobileRoomLink { display: flex; position: absolute; right: 6vw; bottom: 6%; flex-direction: column; align-items: center; gap: 10px; pointer-events: auto; padding: 8px 0; color: #fff0ce; font-family: var(--pixel); font-size: 11px; text-shadow: 2px 2px #8a659d, 3px 3px #392c6a; }
+  .mobileRoomLink img { width: 80px; height: 105px; object-fit: contain; filter: drop-shadow(0 0 10px #ffdc82aa); transition: transform 220ms; }
+  .mobileRoomLink:hover img, .mobileRoomLink:focus-visible img { transform: scale(1.015); }
+  .mobileRoomLink:hover, .mobileRoomLink:focus-visible { color: #fff; text-shadow: 0 0 14px #ffe1a5, 2px 3px #51386d; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .words, .eyebrow span, .worldMap { animation: none; }
+  .track span, .caption, .topbar, .controls, .shade,
+  .page[data-complete="true"] .caption, .roomSprite, .roomGlow, .roomLabel, .mobileRoomLink img { transition: none; }
+}
