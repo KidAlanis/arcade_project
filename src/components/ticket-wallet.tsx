@@ -15,7 +15,10 @@ import {
   finishGame,
   initialDream,
   restoreDream,
+  saveProfile,
+  type Gender,
   type DreamState,
+  type Category,
 } from "@/lib/dreamio";
 
 const KEY = "dreamio-world-v1";
@@ -23,12 +26,13 @@ type Wallet = DreamState & {
   ready: boolean;
   storageAvailable: boolean;
   login: (name: string) => boolean;
+  updateProfile: (name: string, gender: Gender, daylight: number) => boolean;
   logout: () => void;
   addTickets: (amount: number) => boolean;
   spendTickets: (amount: number) => boolean;
   checkIn: () => number;
   purchase: (id: string) => boolean;
-  equip: (id: string) => boolean;
+  equip: (id: string, slot?: Category) => boolean;
   appearance: (kind: "hair" | "skin", value: number) => void;
   completeGame: (slug: string, score: number) => number;
 };
@@ -84,6 +88,7 @@ export function TicketWalletProvider({ children }: { children: ReactNode }) {
         login: (name) =>
           !!name.trim() &&
           commit({ ...current.current, nickname: name.trim().slice(0, 16) }),
+        updateProfile: (name, gender, daylight) => commit(saveProfile(current.current, name, gender, daylight)),
         logout: () => {
           commit({ ...current.current, nickname: "" });
         },
@@ -95,7 +100,7 @@ export function TicketWalletProvider({ children }: { children: ReactNode }) {
           return commit(next) ? reward : 0;
         },
         purchase: (id) => commit(buyItem(current.current, id)),
-        equip: (id) => commit(equipItem(current.current, id)),
+        equip: (id, slot) => commit(equipItem(current.current, id, slot)),
         appearance: (kind, value) => {
           if ([0, 1, 2].includes(value))
             commit({ ...current.current, [kind]: value });

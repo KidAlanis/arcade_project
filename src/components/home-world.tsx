@@ -1,19 +1,11 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
 import { useTicketWallet } from "./ticket-wallet";
 import { Cloud, PixelAvatar, PixelIcon } from "./pixel-art";
 
 export function HomeWorld() {
-  const router = useRouter();
-  const { login, nickname, ready, look, hair, skin, storageAvailable } =
+  const { nickname, look, hair, skin, storageAvailable } =
     useTicketWallet();
-  const [name, setName] = useState("");
-  function enter(event: FormEvent) {
-    event.preventDefault();
-    if (login(name)) router.push("/lobby");
-  }
   return (
     <main className="landing-page">
       <div className="landing-background" aria-hidden="true" />
@@ -23,7 +15,7 @@ export function HomeWorld() {
           D<span>✦</span>
         </Link>
         <span>YOUR COZY LITTLE CORNER OF THE INTERNET</span>
-        <Link href="/lobby">EXPLORE AS GUEST ↗</Link>
+        <Link href="/welcome">ENTER DREAMIO ↗</Link>
       </div>
       <Cloud className="landing-cloud cloud-left" />
       <Cloud className="landing-cloud cloud-right" />
@@ -50,7 +42,7 @@ export function HomeWorld() {
             <p className="landing-player">
               WELCOME BACK, <strong>{nickname}</strong> ♡
             </p>
-            <Link href="/lobby" className="landing-start">
+            <Link href="/welcome" className="landing-start">
               LET’S PLAY <PixelIcon name="arrow" size={20} />
             </Link>
             <Link className="landing-guest" href="/wardrobe">
@@ -58,28 +50,14 @@ export function HomeWorld() {
             </Link>
           </div>
         ) : (
-          <form className="landing-login" onSubmit={enter}>
-            <label htmlFor="nickname">WHAT SHOULD WE CALL YOU?</label>
-            <input
-              id="nickname"
-              autoComplete="nickname"
-              placeholder="Your dreamer name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              maxLength={16}
-              required
-            />
-            <button
-              className="landing-start"
-              disabled={!ready || !name.trim()}
-              type="submit"
-            >
+          <div className="landing-login">
+            <Link className="landing-start" href="/welcome">
               PRESS START <PixelIcon name="arrow" size={20} />
-            </button>
-            <Link href="/lobby" className="landing-guest">
-              Just looking around? Enter as a guest →
             </Link>
-          </form>
+            <Link href="/welcome" className="landing-guest">
+              Your little world is waiting →
+            </Link>
+          </div>
         )}
         <p className="landing-local-note">
           LOCAL DEMO · NO PASSWORD NEEDED

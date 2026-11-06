@@ -8,7 +8,7 @@ export function Header() {
   const { tickets, nickname, look, hair, skin, logout, storageAvailable } =
     useTicketWallet();
   const path = usePathname();
-  if (path === "/") return null;
+  if (path === "/" || path === "/wardrobe" || path === "/welcome" || path === "/intro") return null;
   return (
     <>
       <div className="announcement">
@@ -61,6 +61,7 @@ export function Header() {
                 <span className="chevron">⌄</span>
               </summary>
               <div>
+                <Link href="/welcome">My dreamer profile</Link>
                 <Link href="/wardrobe">My pixel avatar</Link>
                 <button onClick={logout}>Sign out of local demo</button>
               </div>
